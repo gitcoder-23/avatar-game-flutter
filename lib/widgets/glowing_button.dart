@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/audio/audio_service.dart';
 import '../core/theme/colors.dart';
 import '../utils/function.dart';
 
@@ -45,6 +46,7 @@ class GlowingButton extends StatelessWidget {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
         ),
         onPressed: isLoading ? null : () {
+          AudioService.instance.playButtonClick();
           GameUtils.hapticLight();
           onPressed?.call();
         },
@@ -89,6 +91,7 @@ class GlowingButton extends StatelessWidget {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
         ),
         onPressed: isLoading ? null : () {
+          AudioService.instance.playButtonClick();
           GameUtils.hapticLight();
           onPressed?.call();
         },

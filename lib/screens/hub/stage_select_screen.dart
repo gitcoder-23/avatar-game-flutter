@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/audio/audio_service.dart';
 import '../../core/database/user_dao.dart';
 import '../../core/theme/colors.dart';
 import '../../models/stage_model.dart';
@@ -31,10 +32,12 @@ class _StageSelectScreenState extends State<StageSelectScreen> {
   void initState() {
     super.initState();
     _user = widget.user;
+    AudioService.instance.playMenuBgm();
     _loadData();
   }
 
   void _loadData() async {
+    AudioService.instance.playMenuBgm();
     if (_user.id != null) {
       final updatedUser = await UserDAO.instance.getUserById(_user.id!);
       final progress = await UserDAO.instance.getStageProgress(_user.id!);
@@ -49,6 +52,7 @@ class _StageSelectScreenState extends State<StageSelectScreen> {
   }
 
   void _openSettings() {
+    AudioService.instance.playButtonClick();
     showDialog(
       context: context,
       builder: (_) => SettingsDialog(
@@ -59,6 +63,7 @@ class _StageSelectScreenState extends State<StageSelectScreen> {
   }
 
   void _openHeroSanctuary() async {
+    AudioService.instance.playScreenTransition();
     await Navigator.push(
       context,
       MaterialPageRoute(
@@ -72,6 +77,7 @@ class _StageSelectScreenState extends State<StageSelectScreen> {
   }
 
   void _enterStage(StageModel stage) async {
+    AudioService.instance.playScreenTransition();
     await Navigator.push(
       context,
       MaterialPageRoute(

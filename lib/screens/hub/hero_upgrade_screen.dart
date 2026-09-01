@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/audio/audio_service.dart';
 import '../../core/database/user_dao.dart';
 import '../../core/theme/colors.dart';
 import '../../models/skill_model.dart';
@@ -38,6 +39,7 @@ class _HeroUpgradeScreenState extends State<HeroUpgradeScreen> with SingleTicker
 
   void _upgradeAtk() async {
     if (_user.gold < _user.upgradeCostAtk) return;
+    AudioService.instance.playUpgrade();
     final updated = _user.copyWith(
       gold: _user.gold - _user.upgradeCostAtk,
       atkLevel: _user.atkLevel + 1,
@@ -49,6 +51,7 @@ class _HeroUpgradeScreenState extends State<HeroUpgradeScreen> with SingleTicker
 
   void _upgradeHp() async {
     if (_user.gold < _user.upgradeCostHp) return;
+    AudioService.instance.playUpgrade();
     final updated = _user.copyWith(
       gold: _user.gold - _user.upgradeCostHp,
       hpLevel: _user.hpLevel + 1,
@@ -60,6 +63,7 @@ class _HeroUpgradeScreenState extends State<HeroUpgradeScreen> with SingleTicker
 
   void _upgradeDef() async {
     if (_user.gold < _user.upgradeCostDef) return;
+    AudioService.instance.playUpgrade();
     final updated = _user.copyWith(
       gold: _user.gold - _user.upgradeCostDef,
       defLevel: _user.defLevel + 1,
@@ -71,6 +75,7 @@ class _HeroUpgradeScreenState extends State<HeroUpgradeScreen> with SingleTicker
 
   void _upgradeMp() async {
     if (_user.gold < _user.upgradeCostMp) return;
+    AudioService.instance.playUpgrade();
     final updated = _user.copyWith(
       gold: _user.gold - _user.upgradeCostMp,
       mpLevel: _user.mpLevel + 1,

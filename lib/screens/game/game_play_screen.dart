@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/audio/audio_service.dart';
 import '../../core/database/user_dao.dart';
 import '../../core/theme/colors.dart';
 import '../../game/game_controller.dart';
@@ -36,6 +37,9 @@ class _GamePlayScreenState extends State<GamePlayScreen> with TickerProviderStat
   void initState() {
     super.initState();
     _showTutorial = !widget.user.tutorialCompleted;
+
+    // Start stage-specific background music (High-tempo action or Venom Boss theme)
+    AudioService.instance.playStageBgm(widget.stage.id, widget.stage.isBoss);
 
     _controller = GameController(
       context: context,
