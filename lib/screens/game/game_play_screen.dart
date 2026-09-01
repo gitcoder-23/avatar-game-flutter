@@ -69,6 +69,7 @@ class _GamePlayScreenState extends State<GamePlayScreen> with TickerProviderStat
   void _onTutorialComplete() async {
     setState(() {
       _showTutorial = false;
+      _controller.waveTransitionTimer = 0.0;
     });
     if (widget.user.id != null) {
       await UserDAO.instance.markTutorialCompleted(widget.user.id!);
@@ -114,13 +115,23 @@ class _GamePlayScreenState extends State<GamePlayScreen> with TickerProviderStat
                 child: _buildBossHpBar(),
               ),
 
-            // 4. Wave Banner Overlay
-            if (_controller.waveTransitionTimer > 0)
-              Center(
-                child: _buildWaveBanner(),
+            // 4. Wave Banner Overlay (Dismissible & Top-Aligned, never blocking center)
+            if (!_showTutorial && _controller.waveTransitionTimer > 0)
+              Positioned(
+                top: widget.stage.isBoss ? 135 : 72,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _controller.waveTransitionTimer = 0.0;
+                      });
+                    },
+                    child: _buildWaveBanner(),
+                  ),
+                ),
               ),
-
-            // 5. Combo Counter Display
             if (_controller.comboCount > 1)
               Positioned(
                 top: 130,
