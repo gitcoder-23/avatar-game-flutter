@@ -155,7 +155,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                                   Icon(Icons.flash_on_rounded, color: AppColors.electricGold, size: 14),
                                   SizedBox(width: 4),
                                   Text(
-                                    'ACTION HERO : SPIDER SYMBIOTE',
+                                    'SPIDER SYMBIOTE STRIKE',
                                     style: TextStyle(
                                       color: AppColors.spiderRedLight,
                                       fontSize: 10,
@@ -172,7 +172,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                             ShaderMask(
                               shaderCallback: (bounds) => AppColors.spiderGradient.createShader(bounds),
                               child: const Text(
-                                'ACTION HERO',
+                                'CHRONICLES',
                                 style: TextStyle(
                                   color: AppColors.white,
                                   fontSize: 36,

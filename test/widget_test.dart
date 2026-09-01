@@ -14,7 +14,7 @@ void main() {
     addTearDown(() => tester.view.reset());
 
     await tester.pumpWidget(const AvatarGameApp());
-    expect(find.text('ACTION HERO'), findsOneWidget);
+    expect(find.text('CHRONICLES'), findsOneWidget);
     expect(find.text('SYMBIOTE STRIKE • VENOM APEX'), findsOneWidget);
 
     // Fast-forward past splash duration (3000ms + 800ms fade)

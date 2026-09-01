@@ -41,7 +41,7 @@ class AvatarGameApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Action Hero',
+      title: 'Chronicles',
       debugShowCheckedModeBanner: false,
       theme: GameTheme.themeData.copyWith(
         textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme),
