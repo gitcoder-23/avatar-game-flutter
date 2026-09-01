@@ -2,14 +2,16 @@ import 'package:flutter/material.dart';
 import '../../core/audio/audio_service.dart';
 import '../../core/database/user_dao.dart';
 import '../../core/theme/colors.dart';
+import '../../game/engine_3d/camera3d.dart';
+import '../../game/engine_3d/vector3d.dart';
+import '../../game/game_3d_painter.dart';
 import '../../game/game_controller.dart';
-import '../../game/game_painter.dart';
-import '../../game/joystick/virtual_joystick.dart';
-import '../../models/enemy_model.dart';
 import '../../models/skill_model.dart';
 import '../../models/stage_model.dart';
 import '../../models/user_model.dart';
-import '../../widgets/widgets.dart';
+import '../../widgets/glass_card.dart';
+import '../../widgets/level_badge.dart';
+import '../../widgets/stat_bar.dart';
 import 'pause_modal.dart';
 import 'stage_result_modal.dart';
 import 'tutorial_overlay.dart';
@@ -31,6 +33,7 @@ class GamePlayScreen extends StatefulWidget {
 class _GamePlayScreenState extends State<GamePlayScreen> with TickerProviderStateMixin {
   late GameController _controller;
   late AnimationController _animTimerController;
+  final Camera3D _camera = Camera3D();
   bool _showTutorial = false;
 
   @override
@@ -56,11 +59,22 @@ class _GamePlayScreenState extends State<GamePlayScreen> with TickerProviderStat
       duration: const Duration(seconds: 100),
     )..repeat();
 
+    _controller.addListener(_onControllerTick);
     _controller.start();
+  }
+
+  void _onControllerTick() {
+    final heroPos3D = Vector3D(
+      _controller.hero.x - 1200.0,
+      0.0,
+      _controller.hero.y - 800.0,
+    );
+    _camera.update(heroPos3D, _controller.hero.facingAngle, 0.016);
   }
 
   @override
   void dispose() {
+    _controller.removeListener(_onControllerTick);
     _animTimerController.dispose();
     _controller.dispose();
     super.dispose();
@@ -83,14 +97,15 @@ class _GamePlayScreenState extends State<GamePlayScreen> with TickerProviderStat
       body: SafeArea(
         child: Stack(
           children: [
-            // 1. Custom 60FPS Game Painter Canvas
+            // 1. Custom 60FPS 3D Hardware Accelerated Game Canvas
             Positioned.fill(
               child: AnimatedBuilder(
                 animation: _animTimerController,
                 builder: (context, _) {
                   return CustomPaint(
-                    painter: GamePainter(
+                    painter: Game3DPainter(
                       controller: _controller,
+                      camera: _camera,
                       animTime: _animTimerController.value * 100,
                     ),
                   );
@@ -132,6 +147,8 @@ class _GamePlayScreenState extends State<GamePlayScreen> with TickerProviderStat
                   ),
                 ),
               ),
+
+            // 5. Combo Counter Display
             if (_controller.comboCount > 1)
               Positioned(
                 top: 130,
@@ -143,10 +160,7 @@ class _GamePlayScreenState extends State<GamePlayScreen> with TickerProviderStat
             Positioned(
               bottom: 24,
               left: 24,
-              child: VirtualJoystick(
-                onMove: (angle, dist) => _controller.updateJoystick(angle, dist),
-                onRelease: () => _controller.releaseJoystick(),
-              ),
+              child: _buildVirtualJoystick(),
             ),
 
             // 7. Bottom-Right Action & Skill Buttons
@@ -234,10 +248,10 @@ class _GamePlayScreenState extends State<GamePlayScreen> with TickerProviderStat
               height: 52,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: AppColors.frostGradient,
+                gradient: AppColors.spiderGradient,
                 border: Border.all(color: AppColors.white, width: 2),
                 boxShadow: [
-                  BoxShadow(color: AppColors.frostPrimary.withValues(alpha: 0.4), blurRadius: 10, spreadRadius: 2),
+                  BoxShadow(color: AppColors.spiderGlow.withValues(alpha: 0.5), blurRadius: 10, spreadRadius: 2),
                 ],
               ),
               child: const Center(
@@ -302,11 +316,11 @@ class _GamePlayScreenState extends State<GamePlayScreen> with TickerProviderStat
         // Pause Button
         GestureDetector(
           onTap: () => _controller.pauseGame(),
-          child: const GlassCard(
-            padding: EdgeInsets.all(8),
+          child: GlassCard(
+            padding: const EdgeInsets.all(8),
             radius: 12,
-            borderColor: AppColors.white30,
-            child: Icon(Icons.pause_rounded, color: AppColors.white, size: 20),
+            borderColor: AppColors.white38,
+            child: const Icon(Icons.pause_rounded, color: AppColors.white, size: 20),
           ),
         ),
       ],
@@ -317,73 +331,61 @@ class _GamePlayScreenState extends State<GamePlayScreen> with TickerProviderStat
     final boss = _controller.enemies.firstWhere((e) => e.isBoss);
     final hpPercent = (boss.currentHp / boss.maxHp).clamp(0.0, 1.0);
 
-    String phaseText = 'PHASE 1: SYMBIOTE CLAW';
-    Color phaseColor = AppColors.bossPrimary;
-    switch (boss.bossPhase) {
-      case BossPhase.phase1:
-        phaseText = 'PHASE 1: SYMBIOTE CLAW';
-        phaseColor = AppColors.bossPrimary;
-        break;
-      case BossPhase.phase2:
-        phaseText = 'PHASE 2: CARNAGE RAGE';
-        phaseColor = AppColors.bossPhase2;
-        break;
-      case BossPhase.phase3:
-        phaseText = 'PHASE 3: APOCALYPSE TENDRIL';
-        phaseColor = AppColors.bossPhase3;
-        break;
+    String bossTitle = 'VENOM SYMBIOTE OVERLORD';
+    Color bossColor = AppColors.bossPhase3;
+    if (widget.stage.id == 3) {
+      bossTitle = 'SUPERVILLAIN: ELECTRO ⚡';
+      bossColor = AppColors.electricGold;
+    } else if (widget.stage.id == 5) {
+      bossTitle = 'SUPERVILLAIN: DR. OCTOPUS 🐙';
+      bossColor = AppColors.neonCyan;
     }
 
-    return GlassCard(
-      padding: const EdgeInsets.all(8),
-      radius: 14,
-      borderColor: phaseColor,
-      glowColor: phaseColor,
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  const Icon(Icons.warning_amber_rounded, color: AppColors.healthRed, size: 16),
-                  const SizedBox(width: 4),
-                  Text(
-                    boss.name.toUpperCase(),
-                    style: const TextStyle(color: AppColors.white, fontSize: 12, fontWeight: FontWeight.bold),
-                  ),
-                ],
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              bossTitle,
+              style: TextStyle(
+                color: bossColor,
+                fontWeight: FontWeight.w900,
+                fontSize: 13,
+                letterSpacing: 2.0,
               ),
-              Text(
-                phaseText,
-                style: TextStyle(color: phaseColor, fontSize: 11, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              '${(hpPercent * 100).toInt()}%',
+              style: TextStyle(
+                color: bossColor,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
               ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Container(
+          height: 10,
+          decoration: BoxDecoration(
+            color: AppColors.black78,
+            borderRadius: BorderRadius.circular(5),
+            border: Border.all(color: bossColor.withValues(alpha: 0.6)),
+            boxShadow: [
+              BoxShadow(color: bossColor.withValues(alpha: 0.3), blurRadius: 8),
             ],
           ),
-          const SizedBox(height: 6),
-          Container(
-            height: 12,
-            decoration: BoxDecoration(
-              color: AppColors.black,
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: AppColors.white24),
-            ),
-            child: Stack(
-              children: [
-                FractionallySizedBox(
-                  widthFactor: hpPercent,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: phaseColor,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                  ),
-                ),
-              ],
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: hpPercent,
+              backgroundColor: AppColors.transparent,
+              valueColor: AlwaysStoppedAnimation<Color>(bossColor),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -393,19 +395,25 @@ class _GamePlayScreenState extends State<GamePlayScreen> with TickerProviderStat
     Color bannerColor = AppColors.spiderRedLight;
     IconData speakerIcon = Icons.shield_moon_rounded;
 
-    if (widget.stage.isBoss) {
-      dialogueSpeaker = 'VENOM OVERLORD';
-      dialogueQuote = 'WE WILL RIP THIS CITY APART, SPIDER-MAN!';
+    if (widget.stage.id == 3 && widget.stage.isBoss) {
+      dialogueSpeaker = 'ELECTRO';
+      dialogueQuote = 'You cannot ground 100,000 Volts, Spider! Time to get fried!';
+      bannerColor = AppColors.electricGold;
+      speakerIcon = Icons.flash_on_rounded;
+    } else if (widget.stage.id == 5 && widget.stage.isBoss) {
+      dialogueSpeaker = 'DR. OCTOPUS';
+      dialogueQuote = 'The power of the sun in my mechanical arms! You cannot stop progress, Peter!';
+      bannerColor = AppColors.neonCyan;
+      speakerIcon = Icons.precision_manufacturing_rounded;
+    } else if (widget.stage.id == 6) {
+      dialogueSpeaker = 'VENOM';
+      dialogueQuote = 'WE ARE VENOM! WE WILL DEVOUR YOUR CITY!';
       bannerColor = AppColors.carnageCrimson;
       speakerIcon = Icons.dangerous_rounded;
     } else if (_controller.currentWaveIndex == 1) {
       dialogueSpeaker = 'SPIDER-MAN';
       dialogueQuote = 'Reinforcements closing in! Charge up the Symbiote Surge!';
       bannerColor = AppColors.webFluidBlue;
-    } else if (_controller.currentWaveIndex == 2) {
-      dialogueSpeaker = 'SPIDER-MAN';
-      dialogueQuote = 'Final wave of this district! Unleash the Web-Zip Slam!';
-      bannerColor = AppColors.electricGold;
     }
 
     return ConstrainedBox(
@@ -484,11 +492,54 @@ class _GamePlayScreenState extends State<GamePlayScreen> with TickerProviderStat
     );
   }
 
+  Widget _buildVirtualJoystick() {
+    return Container(
+      width: 130,
+      height: 130,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: AppColors.bgDarkCard.withValues(alpha: 0.45),
+        border: Border.all(color: AppColors.neonCyan.withValues(alpha: 0.35), width: 1.5),
+        boxShadow: [
+          BoxShadow(color: AppColors.neonCyan.withValues(alpha: 0.15), blurRadius: 16),
+        ],
+      ),
+      child: GestureDetector(
+        onPanStart: (details) => _handleJoystick(details.localPosition),
+        onPanUpdate: (details) => _handleJoystick(details.localPosition),
+        onPanEnd: (_) => _controller.releaseJoystick(),
+        child: Center(
+          child: Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: AppColors.spiderGradient,
+              boxShadow: [
+                BoxShadow(color: AppColors.spiderGlow.withValues(alpha: 0.6), blurRadius: 10),
+              ],
+            ),
+            child: const Icon(Icons.navigation_rounded, color: AppColors.white, size: 24),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _handleJoystick(Offset localPos) {
+    const radius = 65.0;
+    final dx = localPos.dx - radius;
+    final dy = localPos.dy - radius;
+    final dist = (Offset(dx, dy).distance / radius).clamp(0.0, 1.0);
+    final angle = Offset(dx, dy).direction;
+    _controller.updateJoystick(angle, dist);
+  }
+
   Widget _buildActionControls() {
     final hero = _controller.hero;
-    final frostSkill = hero.skills.firstWhere((s) => s.id == SkillId.frostNova);
-    final fireSkill = hero.skills.firstWhere((s) => s.id == SkillId.infernoComet);
-    final voidSkill = hero.skills.firstWhere((s) => s.id == SkillId.voidDash);
+    final webSkill = hero.skills.firstWhere((s) => s.id == SkillId.frostNova);
+    final surgeSkill = hero.skills.firstWhere((s) => s.id == SkillId.infernoComet);
+    final zipSkill = hero.skills.firstWhere((s) => s.id == SkillId.voidDash);
 
     return SizedBox(
       width: 220,
@@ -499,136 +550,108 @@ class _GamePlayScreenState extends State<GamePlayScreen> with TickerProviderStat
           Positioned(
             bottom: 30,
             right: 120,
-            child: _buildSkillButton(frostSkill),
+            child: _buildSkillButton(webSkill),
           ),
           Positioned(
             bottom: 100,
             right: 100,
-            child: _buildSkillButton(fireSkill),
+            child: _buildSkillButton(surgeSkill),
           ),
           Positioned(
             bottom: 120,
             right: 20,
-            child: _buildSkillButton(voidSkill),
+            child: _buildSkillButton(zipSkill),
           ),
           Positioned(
             bottom: 0,
             right: 110,
-            child: _buildUltimateButton(),
+            child: _buildUltimateButton(hero),
           ),
           Positioned(
             bottom: 0,
             right: 0,
-            child: _buildAttackButton(),
+            child: _buildBasicAttackButton(),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSkillButton(SkillModel skill) {
-    return GestureDetector(
-      onTap: () => _controller.castSkill(skill.id),
-      child: Container(
-        width: 50,
-        height: 50,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: AppColors.bgGlassDark,
-          border: Border.all(
-            color: skill.isReady ? skill.color : AppColors.white24,
-            width: 2,
-          ),
-          boxShadow: skill.isReady
-              ? [
-                  BoxShadow(
-                    color: skill.color.withValues(alpha: 0.5),
-                    blurRadius: 10,
-                    spreadRadius: 1,
-                  ),
-                ]
-              : [],
-        ),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Icon(skill.icon, color: skill.isReady ? AppColors.white : AppColors.white38, size: 24),
-            if (!skill.isReady)
-              Positioned.fill(
-                child: CircularProgressIndicator(
-                  value: skill.cooldownProgress,
-                  strokeWidth: 3,
-                  backgroundColor: AppColors.transparent,
-                  valueColor: AlwaysStoppedAnimation<Color>(skill.color),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAttackButton() {
+  Widget _buildBasicAttackButton() {
     return GestureDetector(
       onTap: () => _controller.performBasicAttack(),
       child: Container(
-        width: 80,
-        height: 80,
+        width: 76,
+        height: 76,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          gradient: const RadialGradient(
-            colors: [
-              AppColors.frostGlow,
-              AppColors.frostSecondary,
-              AppColors.frostDark,
-            ],
-          ),
+          gradient: AppColors.spiderGradient,
           border: Border.all(color: AppColors.white, width: 2.5),
           boxShadow: [
-            BoxShadow(
-              color: AppColors.frostPrimary.withValues(alpha: 0.6),
-              blurRadius: 18,
-              spreadRadius: 4,
-            ),
+            BoxShadow(color: AppColors.spiderGlow.withValues(alpha: 0.8), blurRadius: 16, spreadRadius: 2),
           ],
         ),
         child: const Center(
+          child: Icon(Icons.colorize_rounded, color: AppColors.white, size: 34),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSkillButton(SkillModel skill) {
+    final isReady = skill.isReady && _controller.hero.currentMp >= skill.manaCost;
+
+    return GestureDetector(
+      onTap: isReady ? () => _controller.castSkill(skill.id) : null,
+      child: Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: isReady ? AppColors.spiderRedLight.withValues(alpha: 0.3) : AppColors.black45,
+          border: Border.all(
+            color: isReady ? AppColors.spiderRedLight : AppColors.white24,
+            width: 1.5,
+          ),
+          boxShadow: isReady
+              ? [BoxShadow(color: AppColors.spiderGlow.withValues(alpha: 0.5), blurRadius: 8)]
+              : [],
+        ),
+        child: Center(
           child: Icon(
-            Icons.colorize_rounded,
-            color: AppColors.white,
-            size: 38,
+            skill.icon,
+            color: isReady ? AppColors.white : AppColors.white38,
+            size: 22,
           ),
         ),
       ),
     );
   }
 
-  Widget _buildUltimateButton() {
-    final hero = _controller.hero;
-    final isFull = hero.ultimateCharge >= 100.0;
+  Widget _buildUltimateButton(dynamic hero) {
+    final isReady = hero.ultimateCharge >= 100.0;
 
     return GestureDetector(
-      onTap: () => _controller.castUltimate(),
+      onTap: isReady ? () => _controller.castUltimate() : null,
       child: Container(
         width: 44,
         height: 44,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: isFull ? AppColors.celestialGold : AppColors.black30,
+          gradient: isReady ? AppColors.symbioteGradient : null,
+          color: isReady ? null : AppColors.black45,
           border: Border.all(
-            color: isFull ? AppColors.white : AppColors.white24,
-            width: 2,
+            color: isReady ? AppColors.carnageCrimson : AppColors.white24,
+            width: 1.5,
           ),
-          boxShadow: isFull
-              ? const [
-                  BoxShadow(color: AppColors.celestialGold, blurRadius: 16, spreadRadius: 3),
-                ]
+          boxShadow: isReady
+              ? [BoxShadow(color: AppColors.carnageCrimson.withValues(alpha: 0.8), blurRadius: 12)]
               : [],
         ),
         child: Center(
           child: Icon(
             Icons.auto_awesome_rounded,
-            color: isFull ? AppColors.black : AppColors.white38,
+            color: isReady ? AppColors.white : AppColors.white38,
             size: 20,
           ),
         ),

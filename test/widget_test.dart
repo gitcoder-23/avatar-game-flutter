@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:avatar_game/main.dart';
@@ -5,6 +6,9 @@ import 'package:avatar_game/models/hero_model.dart';
 import 'package:avatar_game/models/user_model.dart';
 import 'package:avatar_game/models/enemy_model.dart';
 import 'package:avatar_game/models/stage_model.dart';
+import 'package:avatar_game/game/engine_3d/vector3d.dart';
+import 'package:avatar_game/game/engine_3d/camera3d.dart';
+import 'package:avatar_game/game/engine_3d/mesh_builder.dart';
 import 'package:avatar_game/utils/function.dart';
 
 void main() {
@@ -24,6 +28,65 @@ void main() {
     // Verify Login Screen appears
     expect(find.text('HERO HEADQUARTERS LOGIN'), findsOneWidget);
     expect(find.text('PATROL NYC'), findsOneWidget);
+  });
+
+  test('3D Vector3D and Camera3D calculations', () {
+    final v1 = Vector3D(10, 20, 30);
+    final v2 = Vector3D(5, 5, 5);
+
+    final vSum = v1 + v2;
+    expect(vSum.x, 15.0);
+    expect(vSum.y, 25.0);
+    expect(vSum.z, 35.0);
+
+    final dot = v1.dot(v2);
+    expect(dot, 50.0 + 100.0 + 150.0);
+
+    final rotY = v1.rotateY(pi / 2);
+    expect(rotY.x.toStringAsFixed(1), '30.0');
+
+    final camera = Camera3D();
+    camera.update(Vector3D.zero(), 0.0, 0.016);
+    expect(camera.position.length > 0, true);
+  });
+
+  test('3D MeshBuilder generates valid polygonal structures', () {
+    final cityPolys = MeshBuilder.buildCityEnvironment(0.0);
+    expect(cityPolys.isNotEmpty, true);
+
+    final heroPolys = MeshBuilder.buildSpiderMan3D(
+      pos: Vector3D.zero(),
+      facingAngle: 0.0,
+      isMoving: true,
+      isAttacking: true,
+      isDashing: true,
+      animTime: 0.5,
+    );
+    expect(heroPolys.isNotEmpty, true);
+
+    // Electro 3D Boss
+    final electroPolys = MeshBuilder.buildElectro3D(
+      pos: Vector3D.zero(),
+      facingAngle: 0.0,
+      animTime: 0.5,
+    );
+    expect(electroPolys.isNotEmpty, true);
+
+    // Dr. Octopus 3D Boss (4 tentacles)
+    final docOckPolys = MeshBuilder.buildDrOctopus3D(
+      pos: Vector3D.zero(),
+      facingAngle: 0.0,
+      animTime: 0.5,
+    );
+    expect(docOckPolys.isNotEmpty, true);
+
+    // Venom 3D Boss
+    final venomPolys = MeshBuilder.buildVenom3D(
+      pos: Vector3D.zero(),
+      facingAngle: 0.0,
+      animTime: 0.5,
+    );
+    expect(venomPolys.isNotEmpty, true);
   });
 
   test('UserModel calculate bonuses and next level XP correctly', () {
@@ -93,14 +156,20 @@ void main() {
     expect(enemy.isDead, true);
   });
 
-  test('All 6 Stages are configured with valid waves and Stage 6 is Venom Boss', () {
+  test('All 6 Stages are configured with Electro, Dr. Octopus, and Venom Bosses', () {
     for (int i = 1; i <= 6; i++) {
       final stage = StageModel.getStageById(i);
       expect(stage.id, i);
       expect(stage.waves.isNotEmpty, true);
-      if (i == 6) {
+      if (i == 3) {
         expect(stage.isBoss, true);
-        expect(stage.waves.first.spawns.first.containsKey(EnemyType.dreadTitanBoss), true);
+        expect(stage.subtitle.contains('ELECTRO'), true);
+      } else if (i == 5) {
+        expect(stage.isBoss, true);
+        expect(stage.subtitle.contains('DR. OCTOPUS'), true);
+      } else if (i == 6) {
+        expect(stage.isBoss, true);
+        expect(stage.subtitle.contains('VENOM'), true);
       }
     }
   });
