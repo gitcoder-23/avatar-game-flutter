@@ -47,48 +47,39 @@ class EnemyEntity {
 
     // Render by type
     switch (enemy.type) {
-      case EnemyType.forestImp:
-        // Spiky round body with horns
+      case EnemyType.impScout:
+        // Street Thug Brawler
         canvas.drawCircle(Offset.zero, enemy.radius, bodyPaint);
         canvas.drawCircle(Offset.zero, enemy.radius, glowPaint);
-        // Horns
-        final hornPath = Path()
-          ..moveTo(-8, -enemy.radius + 2)
-          ..lineTo(-12, -enemy.radius - 8)
-          ..lineTo(-4, -enemy.radius + 2)
-          ..moveTo(8, -enemy.radius + 2)
-          ..lineTo(12, -enemy.radius - 8)
-          ..lineTo(4, -enemy.radius + 2);
-        canvas.drawPath(hornPath, bodyPaint);
         break;
 
       case EnemyType.shadowWolf:
-        // Feral beast quad
-        final wolfPath = Path()
+        // Cyber Drone
+        final dronePath = Path()
           ..moveTo(enemy.radius * 1.2, 0)
           ..lineTo(0, -enemy.radius * 0.8)
           ..lineTo(-enemy.radius * 1.1, 0)
           ..lineTo(0, enemy.radius * 0.8)
           ..close();
-        canvas.drawPath(wolfPath, bodyPaint);
-        canvas.drawPath(wolfPath, glowPaint);
+        canvas.drawPath(dronePath, bodyPaint);
+        canvas.drawPath(dronePath, glowPaint);
         break;
 
       case EnemyType.fireDrake:
-        // Winged serpentine body
+        // Rocket Mercenary
         canvas.drawCircle(Offset.zero, enemy.radius, bodyPaint);
         final wingPath = Path()
           ..moveTo(-10, -enemy.radius)
-          ..lineTo(0, -enemy.radius - 16 - sin(animTime * 8) * 4)
+          ..lineTo(0, -enemy.radius - 14)
           ..lineTo(10, -enemy.radius)
           ..moveTo(-10, enemy.radius)
-          ..lineTo(0, enemy.radius + 16 + sin(animTime * 8) * 4)
+          ..lineTo(0, enemy.radius + 14)
           ..lineTo(10, enemy.radius);
         canvas.drawPath(wingPath, bodyPaint);
         break;
 
       case EnemyType.magmaGolem:
-        // Bulky rocky jagged hexagonal brute
+        // Heavy Brute Enforcer
         final golemPath = Path();
         for (int i = 0; i < 6; i++) {
           final angle = i * pi / 3;
@@ -107,7 +98,7 @@ class EnemyEntity {
         break;
 
       case EnemyType.frostWraith:
-        // Floating ethereal ghost form
+        // Symbiote Crawler
         final wraithPath = Path()
           ..moveTo(0, -enemy.radius * 1.2)
           ..quadraticBezierTo(enemy.radius * 1.1, 0, 0, enemy.radius * 1.2 + sin(animTime * 6) * 4)
@@ -117,7 +108,7 @@ class EnemyEntity {
         break;
 
       case EnemyType.cryoKnight:
-        // Shielded armored knight
+        // Symbiote Heavy Mutant
         canvas.drawRRect(
           RRect.fromRectAndRadius(
             Rect.fromCenter(center: Offset.zero, width: enemy.radius * 1.8, height: enemy.radius * 1.8),
@@ -135,7 +126,7 @@ class EnemyEntity {
         break;
 
       case EnemyType.stormHarpy:
-        // Fast flying avian demon
+        // Oscorp Laser Drone
         final harpyPath = Path()
           ..moveTo(enemy.radius, 0)
           ..lineTo(-enemy.radius, -enemy.radius * 1.4 - sin(animTime * 10) * 6)
@@ -147,41 +138,36 @@ class EnemyEntity {
         break;
 
       case EnemyType.thunderWarden:
-        // Heavy thunder warden with dual shields
+        // Shock Tech Trooper
         canvas.drawCircle(Offset.zero, enemy.radius, bodyPaint);
         canvas.drawCircle(Offset.zero, enemy.radius, glowPaint);
         canvas.drawRect(
           Rect.fromCenter(center: const Offset(14, 0), width: 8, height: enemy.radius * 1.8),
-          Paint()..color = AppColors.celestialGold,
+          Paint()..color = AppColors.electricGold,
         );
         break;
 
       case EnemyType.voidStalker:
-        // Shadow phantom with tendrils
+        // Symbiote Tendril Fiend
         canvas.drawCircle(Offset.zero, enemy.radius, bodyPaint);
         for (int i = 0; i < 4; i++) {
           final tAngle = i * pi / 2 + animTime * 3;
-          final tx = cos(tAngle) * (enemy.radius + 8 + sin(animTime * 5 + i) * 4);
-          final ty = sin(tAngle) * (enemy.radius + 8 + cos(animTime * 5 + i) * 4);
+          final tx = cos(tAngle) * (enemy.radius + 8);
+          final ty = sin(tAngle) * (enemy.radius + 8);
           canvas.drawCircle(Offset(tx, ty), 4, glowPaint);
         }
         break;
 
-      case EnemyType.darkArchmage:
-        // Dark hooded robes with revolving void orbs
+      case EnemyType.voidArchmage:
+        // Oscorp Cyber Commander
         canvas.drawCircle(Offset.zero, enemy.radius, bodyPaint);
         final orbAngle = animTime * 4;
         final ox1 = cos(orbAngle) * (enemy.radius + 14);
         final oy1 = sin(orbAngle) * (enemy.radius + 14);
         final ox2 = cos(orbAngle + pi) * (enemy.radius + 14);
         final oy2 = sin(orbAngle + pi) * (enemy.radius + 14);
-        canvas.drawCircle(Offset(ox1, oy1), 6, Paint()..color = AppColors.voidGlow);
-        canvas.drawCircle(Offset(ox2, oy2), 6, Paint()..color = AppColors.voidGlow);
-        break;
-
-      case EnemyType.bossMinion:
-        canvas.drawCircle(Offset.zero, enemy.radius, bodyPaint);
-        canvas.drawCircle(Offset.zero, enemy.radius * 0.5, Paint()..color = AppColors.black);
+        canvas.drawCircle(Offset(ox1, oy1), 6, Paint()..color = AppColors.neonCyan);
+        canvas.drawCircle(Offset(ox2, oy2), 6, Paint()..color = AppColors.neonMagenta);
         break;
 
       case EnemyType.dreadTitanBoss:
@@ -193,32 +179,24 @@ class EnemyEntity {
     canvas.drawCircle(Offset(enemy.radius * 0.35, -4), 3, eyePaint);
     canvas.drawCircle(Offset(enemy.radius * 0.35, 4), 3, eyePaint);
 
-    // Frozen Ice Block Overlay
+    // Web Entangled Overlay
     if (enemy.isFrozen) {
-      final icePaint = Paint()
-        ..color = AppColors.frostGlow.withValues(alpha: 0.6)
-        ..style = PaintingStyle.fill;
-      final iceBorder = Paint()
-        ..color = AppColors.frostPrimary
+      final webPaint = Paint()
+        ..color = AppColors.webWhite
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 3.0;
+        ..strokeWidth = 2.5;
 
-      final iceRect = Rect.fromCenter(
-        center: Offset.zero,
-        width: enemy.radius * 2.6,
-        height: enemy.radius * 2.6,
-      );
-      canvas.drawRect(iceRect, icePaint);
-      canvas.drawRect(iceRect, iceBorder);
+      canvas.drawCircle(Offset.zero, enemy.radius + 4, webPaint);
+      canvas.drawLine(Offset(-enemy.radius, 0), Offset(enemy.radius, 0), webPaint);
+      canvas.drawLine(Offset(0, -enemy.radius), Offset(0, enemy.radius), webPaint);
     }
 
-    // Floating Health Bar
+    // Health Bar
     if (!enemy.isBoss) {
       final hpBarWidth = max(36.0, enemy.radius * 1.8);
       const hpBarHeight = 5.0;
       final hpBarY = -enemy.radius - 12.0;
 
-      // Background
       final bgHp = Paint()..color = AppColors.black78;
       canvas.drawRRect(
         RRect.fromRectAndRadius(
@@ -228,7 +206,6 @@ class EnemyEntity {
         bgHp,
       );
 
-      // Fill
       final hpPercent = (enemy.currentHp / enemy.maxHp).clamp(0.0, 1.0);
       final fillHp = Paint()
         ..color = hpPercent > 0.4 ? AppColors.healthRed : AppColors.healthRedLight;

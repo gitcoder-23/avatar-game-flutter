@@ -2,8 +2,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import '../core/constants/game_constants.dart';
 import '../core/theme/colors.dart';
-import 'components/boss_entity.dart';
-import 'components/enemy_entity.dart';
 import 'components/hero_entity.dart';
 import 'game_controller.dart';
 
@@ -18,184 +16,161 @@ class GamePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // 1. Screen Shake Calculation
-    double shakeOffsetX = 0.0;
-    double shakeOffsetY = 0.0;
-    if (controller.screenShakeIntensity > 0) {
-      shakeOffsetX = (Random().nextDouble() - 0.5) * controller.screenShakeIntensity * 2;
-      shakeOffsetY = (Random().nextDouble() - 0.5) * controller.screenShakeIntensity * 2;
-    }
+    final cameraX = controller.cameraX;
+    final cameraY = controller.cameraY;
 
-    canvas.save();
-    canvas.translate(shakeOffsetX, shakeOffsetY);
+    // 1. Dark City Night Sky Background
+    final bgRect = Rect.fromLTWH(0, 0, size.width, size.height);
+    final bgPaint = Paint()
+      ..shader = AppColors.cityNightGradient.createShader(bgRect);
+    canvas.drawRect(bgRect, bgPaint);
 
-    // 2. Camera Transform (Hero Centered)
-    final screenCenterX = size.width / 2;
-    final screenCenterY = size.height / 2;
-    final viewX = screenCenterX - controller.cameraX;
-    final viewY = screenCenterY - controller.cameraY;
+    // 2. Distant Manhattan Skylines & Searchlights (Parallax)
+    _drawCitySkylineParallax(canvas, size, cameraX, cameraY);
 
-    canvas.save();
-    canvas.translate(viewX, viewY);
+    // 3. Rooftop Combat Arena
+    _drawRooftopArena(canvas, size, cameraX, cameraY);
 
-    // 3. Render Arena Background & Elemental Floor Grid
-    _renderArenaFloor(canvas, size);
+    // 4. Projectiles & Web Shots
+    for (var proj in controller.projectiles) {
+      final screenX = proj.x - cameraX;
+      final screenY = proj.y - cameraY;
 
-    // 4. Render Center Rune Circle
-    _renderCenterRune(canvas);
-
-    // 5. Render Projectiles
-    _renderProjectiles(canvas);
-
-    // 6. Render Enemies
-    for (var enemy in controller.enemies) {
-      if (enemy.isBoss) {
-        BossEntity.render(canvas, enemy, animTime);
-      } else {
-        EnemyEntity.render(canvas, enemy, animTime);
+      if (screenX >= -50 &&
+          screenX <= size.width + 50 &&
+          screenY >= -50 &&
+          screenY <= size.height + 50) {
+        _drawWebProjectile(canvas, proj, screenX, screenY);
       }
     }
 
-    // 7. Render Hero
-    HeroEntity.render(canvas, controller.hero, animTime);
+    // 5. Enemies & Boss
+    for (var enemy in controller.enemies) {
+      final screenX = enemy.x - cameraX;
+      final screenY = enemy.y - cameraY;
 
-    // 8. Render Particles Layer
-    controller.particleSystem.render(canvas);
-
-    // 9. Render Floating Texts
-    _renderFloatingTexts(canvas);
-
-    canvas.restore(); // Restore Camera
-    canvas.restore(); // Restore Screen Shake
-  }
-
-  void _renderArenaFloor(Canvas canvas, Size size) {
-    // Arena Background
-    final arenaRect = const Rect.fromLTWH(0, 0, GameConstants.worldWidth, GameConstants.worldHeight);
-    final bgPaint = Paint()..color = AppColors.bgArena;
-    canvas.drawRect(arenaRect, bgPaint);
-
-    // Stage Gradient Tint
-    final stageTint = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          controller.stage.primaryColor.withValues(alpha: 0.12),
-          controller.stage.secondaryColor.withValues(alpha: 0.05),
-          AppColors.transparent,
-        ],
-        radius: 0.8,
-      ).createShader(arenaRect);
-    canvas.drawRect(arenaRect, stageTint);
-
-    // Grid Lines
-    final gridPaint = Paint()
-      ..color = AppColors.gridLines
-      ..strokeWidth = 1.0;
-
-    const gridSize = 100.0;
-    for (double x = 0; x <= GameConstants.worldWidth; x += gridSize) {
-      canvas.drawLine(Offset(x, 0), Offset(x, GameConstants.worldHeight), gridPaint);
-    }
-    for (double y = 0; y <= GameConstants.worldHeight; y += gridSize) {
-      canvas.drawLine(Offset(0, y), Offset(GameConstants.worldWidth, y), gridPaint);
+      if (screenX >= -100 &&
+          screenX <= size.width + 100 &&
+          screenY >= -100 &&
+          screenY <= size.height + 100) {
+        enemy.render(canvas, screenX, screenY);
+      }
     }
 
-    // Arena Perimeter Glow Boundary
-    final borderGlow = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 6.0
-      ..color = controller.stage.primaryColor.withValues(alpha: 0.7);
-    canvas.drawRect(arenaRect, borderGlow);
+    // 6. Spider-Hero Entity
+    final heroScreenX = controller.hero.x - cameraX;
+    final heroScreenY = controller.hero.y - cameraY;
+    HeroEntity.render(canvas, controller.hero, heroScreenX, heroScreenY, animTime);
 
-    final borderInner = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0
-      ..color = AppColors.white.withValues(alpha: 0.5);
-    canvas.drawRect(arenaRect.deflate(4), borderInner);
-  }
+    // 7. Particle System (Web Splatters & Symbiote Tendrils)
+    controller.particles.render(canvas, cameraX, cameraY);
 
-  void _renderCenterRune(Canvas canvas) {
-    final centerX = GameConstants.worldWidth / 2;
-    final centerY = GameConstants.worldHeight / 2;
-
-    final runePaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3.0
-      ..color = controller.stage.primaryColor.withValues(alpha: 0.35);
-
-    canvas.drawCircle(Offset(centerX, centerY), 260, runePaint);
-    canvas.drawCircle(Offset(centerX, centerY), 160, runePaint);
-
-    // Rotating 8-point elemental star
-    final starPaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0
-      ..color = controller.stage.secondaryColor.withValues(alpha: 0.4);
-
-    const numPoints = 8;
-    for (int i = 0; i < numPoints; i++) {
-      final angle = i * 2 * pi / numPoints + animTime * 0.2;
-      final x1 = centerX + cos(angle) * 260;
-      final y1 = centerY + sin(angle) * 260;
-      final x2 = centerX + cos(angle + pi) * 260;
-      final y2 = centerY + sin(angle + pi) * 260;
-      canvas.drawLine(Offset(x1, y1), Offset(x2, y2), starPaint);
-    }
-  }
-
-  void _renderProjectiles(Canvas canvas) {
-    final projPaint = Paint()..style = PaintingStyle.fill;
-    final projGlow = Paint()..style = PaintingStyle.stroke..strokeWidth = 3.0;
-
-    for (var p in controller.projectiles) {
-      projPaint.color = p.color;
-      projGlow.color = AppColors.white;
-
-      canvas.drawCircle(Offset(p.x, p.y), p.radius, projPaint);
-      canvas.drawCircle(Offset(p.x, p.y), p.radius + 2, projGlow);
-
-      // Trailing tail
-      final tailPaint = Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = p.radius * 1.5
-        ..strokeCap = StrokeCap.round
-        ..shader = LinearGradient(
-          colors: [p.color.withValues(alpha: 0.8), AppColors.transparent],
-        ).createShader(Rect.fromLTWH(p.x - p.vx * 0.05, p.y - p.vy * 0.05, p.vx * 0.05, p.vy * 0.05));
-
-      canvas.drawLine(Offset(p.x, p.y), Offset(p.x - p.vx * 0.06, p.y - p.vy * 0.06), tailPaint);
-    }
-  }
-
-  void _renderFloatingTexts(Canvas canvas) {
+    // 8. Comic Book Floating Text Bubbles ("THWACK!", "BAM!")
     for (var ft in controller.floatingTexts) {
-      final alpha = (ft.lifeProgress * 255).clamp(0, 255).toInt();
-      final textSpan = TextSpan(
-        text: ft.text,
-        style: TextStyle(
-          color: ft.color.withValues(alpha: alpha / 255),
-          fontSize: ft.fontSize,
-          fontWeight: ft.isCrit ? FontWeight.w900 : FontWeight.bold,
-          shadows: [
-            Shadow(
-              color: AppColors.black.withValues(alpha: alpha / 255),
-              blurRadius: 4,
-              offset: const Offset(1, 2),
-            ),
-          ],
-        ),
-      );
+      final screenX = ft.x - cameraX;
+      final screenY = ft.y - cameraY;
+      ft.render(canvas, screenX, screenY);
+    }
+  }
 
-      final textPainter = TextPainter(
-        text: textSpan,
-        textDirection: TextDirection.ltr,
-      )..layout();
+  void _drawCitySkylineParallax(Canvas canvas, Size size, double camX, double camY) {
+    final skylinePaint = Paint()..color = AppColors.bgBuilding;
+    final windowYellow = Paint()..color = AppColors.thugYellow.withValues(alpha: 0.7);
+    final windowCyan = Paint()..color = AppColors.neonCyan.withValues(alpha: 0.6);
 
-      textPainter.paint(
-        canvas,
-        Offset(ft.x - textPainter.width / 2, ft.y - textPainter.height / 2),
+    // Distant Buildings
+    for (int i = 0; i < 18; i++) {
+      final bWidth = 90.0 + (i % 3) * 30.0;
+      final bHeight = 180.0 + (i % 5) * 45.0;
+      final bX = (i * 120.0 - camX * 0.15) % (size.width + 300) - 100;
+      final bY = size.height - bHeight + 40;
+
+      final bRect = Rect.fromLTWH(bX, bY, bWidth, bHeight);
+      canvas.drawRect(bRect, skylinePaint);
+
+      // Skyscraper windows
+      for (double wy = bY + 15; wy < size.height; wy += 22) {
+        for (double wx = bX + 10; wx < bX + bWidth - 10; wx += 16) {
+          if ((wx + wy).toInt() % 3 == 0) {
+            final wPaint = (wx.toInt() % 2 == 0) ? windowYellow : windowCyan;
+            canvas.drawRect(Rect.fromLTWH(wx, wy, 8, 12), wPaint);
+          }
+        }
+      }
+    }
+
+    // Sweeping Searchlight Beams across the sky
+    final lightPaint = Paint()
+      ..color = AppColors.neonCyan.withValues(alpha: 0.08)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 15);
+
+    final angle1 = -pi / 3 + sin(animTime * 0.5) * 0.4;
+    final beamPath1 = Path()
+      ..moveTo(size.width * 0.25, size.height)
+      ..lineTo(size.width * 0.25 + cos(angle1) * 800 - 80, sin(angle1) * 800)
+      ..lineTo(size.width * 0.25 + cos(angle1) * 800 + 80, sin(angle1) * 800)
+      ..close();
+    canvas.drawPath(beamPath1, lightPaint);
+
+    final angle2 = -2 * pi / 3 + cos(animTime * 0.4) * 0.35;
+    final beamPath2 = Path()
+      ..moveTo(size.width * 0.75, size.height)
+      ..lineTo(size.width * 0.75 + cos(angle2) * 800 - 90, sin(angle2) * 800)
+      ..lineTo(size.width * 0.75 + cos(angle2) * 800 + 90, sin(angle2) * 800)
+      ..close();
+    canvas.drawPath(beamPath2, lightPaint);
+  }
+
+  void _drawRooftopArena(Canvas canvas, Size size, double camX, double camY) {
+    final worldW = GameConstants.worldWidth;
+    final worldH = GameConstants.worldHeight;
+
+    // Arena Floor
+    final arenaScreenRect = Rect.fromLTRB(-camX, -camY, worldW - camX, worldH - camY);
+    final arenaPaint = Paint()..color = AppColors.bgArena;
+    canvas.drawRect(arenaScreenRect, arenaPaint);
+
+    // Rooftop Grid & Laser Border
+    final borderPaint = Paint()
+      ..color = AppColors.neonCyan.withValues(alpha: 0.5)
+      ..strokeWidth = 3.0
+      ..style = PaintingStyle.stroke
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
+    canvas.drawRect(arenaScreenRect, borderPaint);
+
+    // Helipad / Central Spider Crest
+    final centerScreenX = (worldW / 2) - camX;
+    final centerScreenY = (worldH / 2) - camY;
+
+    final ringPaint = Paint()
+      ..color = AppColors.spiderRedLight.withValues(alpha: 0.35)
+      ..strokeWidth = 3.0
+      ..style = PaintingStyle.stroke;
+    canvas.drawCircle(Offset(centerScreenX, centerScreenY), 220, ringPaint);
+    canvas.drawCircle(Offset(centerScreenX, centerScreenY), 160, ringPaint);
+
+    // Spider Crest Lines
+    final webPaint = Paint()
+      ..color = AppColors.spiderBlueLight.withValues(alpha: 0.25)
+      ..strokeWidth = 2.0;
+    for (int i = 0; i < 8; i++) {
+      final angle = i * (pi / 4);
+      canvas.drawLine(
+        Offset(centerScreenX, centerScreenY),
+        Offset(centerScreenX + cos(angle) * 220, centerScreenY + sin(angle) * 220),
+        webPaint,
       );
     }
+  }
+
+  void _drawWebProjectile(Canvas canvas, dynamic proj, double screenX, double screenY) {
+    final webCorePaint = Paint()..color = AppColors.webWhite;
+    final webGlowPaint = Paint()
+      ..color = AppColors.webFluidBlue
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
+
+    canvas.drawCircle(Offset(screenX, screenY), 8, webGlowPaint);
+    canvas.drawCircle(Offset(screenX, screenY), 5, webCorePaint);
   }
 
   @override

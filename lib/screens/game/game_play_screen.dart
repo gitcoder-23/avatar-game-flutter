@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../core/constants/game_constants.dart';
 import '../../core/database/user_dao.dart';
 import '../../core/theme/colors.dart';
 import '../../game/game_controller.dart';
@@ -303,19 +302,19 @@ class _GamePlayScreenState extends State<GamePlayScreen> with TickerProviderStat
     final boss = _controller.enemies.firstWhere((e) => e.isBoss);
     final hpPercent = (boss.currentHp / boss.maxHp).clamp(0.0, 1.0);
 
-    String phaseText;
-    Color phaseColor;
+    String phaseText = 'PHASE 1: SYMBIOTE CLAW';
+    Color phaseColor = AppColors.bossPrimary;
     switch (boss.bossPhase) {
       case BossPhase.phase1:
-        phaseText = 'PHASE 1: TITAN CRUSH';
+        phaseText = 'PHASE 1: SYMBIOTE CLAW';
         phaseColor = AppColors.bossPrimary;
         break;
       case BossPhase.phase2:
-        phaseText = 'PHASE 2: CHAOS ENRAGE';
+        phaseText = 'PHASE 2: CARNAGE RAGE';
         phaseColor = AppColors.bossPhase2;
         break;
       case BossPhase.phase3:
-        phaseText = 'PHASE 3: APOCALYPSE';
+        phaseText = 'PHASE 3: APOCALYPSE TENDRIL';
         phaseColor = AppColors.bossPhase3;
         break;
     }

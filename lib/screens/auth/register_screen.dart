@@ -15,7 +15,7 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _heroNameController = TextEditingController(text: 'Avatar Kael');
+  final _heroNameController = TextEditingController(text: 'Spider-Hero (Classic Suit)');
   final _formKey = GlobalKey<FormState>();
 
   bool _isLoading = false;
@@ -23,10 +23,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String? _errorMessage;
 
   final List<String> _heroPresets = [
-    'Avatar Kael (Frost)',
-    'Avatar Ignis (Fire)',
-    'Avatar Zephyr (Storm)',
-    'Avatar Nyx (Void)',
+    'Spider-Hero (Classic Suit)',
+    'Spider-Hero (Black Symbiote)',
+    'Spider-Hero (Iron Spider)',
+    'Spider-Hero (2099 Cyber)',
   ];
 
   @override
@@ -79,11 +79,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
       backgroundColor: AppColors.bgDark,
       body: Stack(
         children: [
-          // Background Gradient Nebula
+          // Background Gradient City Night
           Positioned.fill(
             child: Container(
               decoration: const BoxDecoration(
-                gradient: AppColors.registerNebulaBackground,
+                gradient: AppColors.cityNightGradient,
               ),
             ),
           ),
@@ -107,10 +107,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             height: 76,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              gradient: AppColors.voidGradient,
+                              gradient: AppColors.spiderGradient,
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.voidPrimary.withValues(alpha: 0.5),
+                                  color: AppColors.spiderRed.withValues(alpha: 0.6),
                                   blurRadius: 24,
                                   spreadRadius: 4,
                                 ),
@@ -123,7 +123,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           const SizedBox(height: 12),
 
                           const Text(
-                            'WARRIOR AWAKENING',
+                            'NEW WEB-SLINGER',
                             style: TextStyle(
                               color: AppColors.white,
                               fontSize: 18,
@@ -134,9 +134,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           const SizedBox(height: 4),
 
                           const Text(
-                            'CHOOSE YOUR ELEMENTAL PATH',
+                            'SELECT YOUR SPIDER-SUIT',
                             style: TextStyle(
-                              color: AppColors.voidGlow,
+                              color: AppColors.spiderRedLight,
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 1.5,
@@ -161,15 +161,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     const SizedBox(width: 16),
 
-                    // Right Column: Glassmorphic Register Form
+                    // Right Column: Register Form
                     Expanded(
                       flex: 5,
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 400),
                         child: GlassCard(
                           radius: 18,
-                          borderColor: AppColors.voidPrimary,
-                          glowColor: AppColors.voidPrimary,
+                          borderColor: AppColors.spiderRed,
+                          glowColor: AppColors.spiderGlow,
                           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
                           child: Form(
                             key: _formKey,
@@ -178,11 +178,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 const Text(
-                                  'FORGE AVATAR PROFILE',
+                                  'REGISTER HERO IDENTITY',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     color: AppColors.white,
-                                    fontSize: 15,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.bold,
                                     letterSpacing: 1.2,
                                   ),
@@ -208,9 +208,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 // Username field
                                 CustomTextField(
                                   controller: _usernameController,
-                                  label: 'Unique Username',
+                                  label: 'Hero Codename',
                                   prefixIcon: Icons.person_rounded,
-                                  focusColor: AppColors.voidGlow,
+                                  focusColor: AppColors.spiderRedLight,
                                   validator: GameUtils.validateUsername,
                                 ),
                                 const SizedBox(height: 8),
@@ -218,10 +218,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 // Password field
                                 CustomTextField(
                                   controller: _passwordController,
-                                  label: 'Secret Passkey',
+                                  label: 'Security Passkey',
                                   prefixIcon: Icons.lock_rounded,
                                   obscureText: _obscurePassword,
-                                  focusColor: AppColors.voidGlow,
+                                  focusColor: AppColors.spiderRedLight,
                                   validator: GameUtils.validatePassword,
                                   suffixIcon: IconButton(
                                     icon: Icon(
@@ -238,15 +238,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 ),
                                 const SizedBox(height: 8),
 
-                                // Hero Class Dropdown
+                                // Suit Preset Dropdown
                                 DropdownButtonFormField<String>(
                                   initialValue: _heroPresets.first,
                                   dropdownColor: AppColors.bgDarkCard,
                                   style: const TextStyle(color: AppColors.white, fontSize: 13),
                                   decoration: InputDecoration(
-                                    labelText: 'Avatar Class',
+                                    labelText: 'Spider-Suit Chassis',
                                     labelStyle: const TextStyle(color: AppColors.white60, fontSize: 12),
-                                    prefixIcon: const Icon(Icons.shield_rounded, color: AppColors.voidGlow, size: 18),
+                                    prefixIcon: const Icon(Icons.shield_rounded, color: AppColors.spiderRedLight, size: 18),
                                     filled: true,
                                     fillColor: AppColors.black30,
                                     contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -256,7 +256,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(color: AppColors.voidGlow, width: 1.5),
+                                      borderSide: const BorderSide(color: AppColors.spiderRedLight, width: 1.5),
                                     ),
                                   ),
                                   items: _heroPresets.map((preset) {
@@ -275,13 +275,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                                 // Glowing Register Button
                                 GlowingButton(
-                                  text: 'AWAKEN AVATAR',
+                                  text: 'AWAKEN SPIDER-HERO',
                                   height: 42,
                                   fontSize: 12,
                                   isLoading: _isLoading,
-                                  backgroundColor: AppColors.voidPrimary,
+                                  backgroundColor: AppColors.spiderRed,
                                   textColor: AppColors.white,
-                                  glowColor: AppColors.voidGlow,
+                                  glowColor: AppColors.spiderGlow,
                                   onPressed: _handleRegister,
                                 ),
                               ],

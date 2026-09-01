@@ -171,7 +171,7 @@ class ParticleSystem {
     }
   }
 
-  void render(Canvas canvas) {
+  void render(Canvas canvas, [double cameraX = 0, double cameraY = 0]) {
     final Paint circlePaint = Paint()..style = PaintingStyle.fill;
     final Paint ringPaint = Paint()..style = PaintingStyle.stroke;
     final Paint sparkPaint = Paint()..style = PaintingStyle.stroke..strokeCap = StrokeCap.round;
@@ -180,28 +180,31 @@ class ParticleSystem {
       final alpha = (p.lifeProgress * 255).clamp(0, 255).toInt();
       if (alpha <= 0) continue;
 
+      final sx = p.x - cameraX;
+      final sy = p.y - cameraY;
+
       switch (p.shape) {
         case ParticleShape.circle:
           circlePaint.color = p.color.withValues(alpha: alpha / 255);
-          canvas.drawCircle(Offset(p.x, p.y), p.size * p.lifeProgress, circlePaint);
+          canvas.drawCircle(Offset(sx, sy), p.size * p.lifeProgress, circlePaint);
           break;
         case ParticleShape.ring:
           ringPaint.color = p.color.withValues(alpha: alpha / 255);
           ringPaint.strokeWidth = 3.0 * p.lifeProgress;
           final currentRadius = p.size * (1.0 - p.lifeProgress * 0.5);
-          canvas.drawCircle(Offset(p.x, p.y), currentRadius, ringPaint);
+          canvas.drawCircle(Offset(sx, sy), currentRadius, ringPaint);
           break;
         case ParticleShape.spark:
           sparkPaint.color = p.color.withValues(alpha: alpha / 255);
           sparkPaint.strokeWidth = p.size * 0.6;
-          final endX = p.x + p.vx * 0.04;
-          final endY = p.y + p.vy * 0.04;
-          canvas.drawLine(Offset(p.x, p.y), Offset(endX, endY), sparkPaint);
+          final endX = sx + p.vx * 0.04;
+          final endY = sy + p.vy * 0.04;
+          canvas.drawLine(Offset(sx, sy), Offset(endX, endY), sparkPaint);
           break;
         case ParticleShape.star:
           circlePaint.color = p.color.withValues(alpha: alpha / 255);
           canvas.save();
-          canvas.translate(p.x, p.y);
+          canvas.translate(sx, sy);
           canvas.rotate(p.rotation);
           final rect = Rect.fromCenter(center: Offset.zero, width: p.size, height: p.size);
           canvas.drawRect(rect, circlePaint);
@@ -210,7 +213,7 @@ class ParticleSystem {
         case ParticleShape.slash:
           sparkPaint.color = p.color.withValues(alpha: alpha / 255);
           sparkPaint.strokeWidth = 4.0;
-          canvas.drawCircle(Offset(p.x, p.y), p.size, sparkPaint);
+          canvas.drawCircle(Offset(sx, sy), p.size, sparkPaint);
           break;
       }
     }

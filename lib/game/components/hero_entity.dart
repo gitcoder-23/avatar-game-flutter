@@ -4,138 +4,119 @@ import '../../core/theme/colors.dart';
 import '../../models/hero_model.dart';
 
 class HeroEntity {
-  static void render(Canvas canvas, HeroModel hero, double animTime) {
-    if (hero.isInvulnerable && (animTime * 15).floor() % 2 == 0) {
-      // Blink when invulnerable
-      return;
-    }
-
+  static void render(Canvas canvas, HeroModel hero, double screenX, double screenY, double animTime) {
     canvas.save();
-    canvas.translate(hero.x, hero.y);
+    canvas.translate(screenX, screenY);
 
-    // 1. Glowing Elemental Aura
-    final auraRadius = 32.0 + sin(animTime * 4) * 3.0;
-    final auraPaint = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          AppColors.frostPrimary.withValues(alpha: 0.4),
-          AppColors.frostGlow.withValues(alpha: 0.15),
-          AppColors.transparent,
-        ],
-      ).createShader(Rect.fromCircle(center: Offset.zero, radius: auraRadius + 15));
-    canvas.drawCircle(Offset.zero, auraRadius + 15, auraPaint);
-
-    // 2. Ultimate Casting Ring
-    if (hero.isCastingUltimate) {
-      final ultPaint = Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 4.0
-        ..color = AppColors.celestialGold.withValues(alpha: 0.8);
-      canvas.drawCircle(Offset.zero, 55.0 + sin(animTime * 12) * 5, ultPaint);
-    }
-
-    // 3. Rotate hero body towards facing angle
-    canvas.rotate(hero.facingAngle);
-
-    // Shadow
-    final shadowPaint = Paint()..color = AppColors.shadowBlack;
+    // Shadow on Rooftop
+    final shadowPaint = Paint()
+      ..color = AppColors.shadowBlack
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
     canvas.drawOval(
-      Rect.fromCenter(center: const Offset(0, 4), width: 44, height: 28),
+      Rect.fromCenter(center: const Offset(0, 22), width: 44, height: 18),
       shadowPaint,
     );
 
-    // Cape / Cloak
-    final capePath = Path()
-      ..moveTo(-12, -14)
-      ..lineTo(-32 + sin(animTime * 6) * 4, 0)
-      ..lineTo(-12, 14)
-      ..close();
-    final capePaint = Paint()
-      ..shader = const LinearGradient(
-        colors: [AppColors.frostSecondary, AppColors.bgNavy],
-      ).createShader(Rect.fromLTWH(-36, -16, 36, 32));
-    canvas.drawPath(capePath, capePaint);
+    canvas.rotate(hero.facingAngle);
 
-    // Torso Armor
-    final armorPaint = Paint()..color = AppColors.bgSlateCard;
-    final armorHighlight = Paint()..color = AppColors.frostPrimary;
-    canvas.drawCircle(Offset.zero, 18, armorPaint);
+    // Spider-Hero Aura / Web Glow
+    final isSymbioteSuit = hero.heroName.toLowerCase().contains('symbiote') ||
+        hero.heroName.toLowerCase().contains('black');
 
-    // Shoulder Pauldrons
-    canvas.drawCircle(const Offset(4, -14), 7, armorHighlight);
-    canvas.drawCircle(const Offset(4, 14), 7, armorHighlight);
+    final auraColor = isSymbioteSuit ? AppColors.venomGlow : AppColors.spiderGlow;
+    final auraPaint = Paint()
+      ..color = auraColor.withValues(alpha: 0.35 + sin(animTime * 6) * 0.15)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 14);
+    canvas.drawCircle(Offset.zero, 30, auraPaint);
 
-    // Head / Helm with Visor
-    final helmPaint = Paint()..color = AppColors.bgHelm;
-    canvas.drawCircle(const Offset(6, 0), 10, helmPaint);
+    // Spider-Suit Torso
+    final suitBaseColor = isSymbioteSuit ? AppColors.symbioteBlack : AppColors.spiderRed;
+    final suitAccentColor = isSymbioteSuit ? AppColors.symbiotePurple : AppColors.spiderBlue;
 
-    final visorPaint = Paint()..color = AppColors.frostPrimary;
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromCenter(center: const Offset(11, 0), width: 6, height: 10),
-        const Radius.circular(3),
-      ),
-      visorPaint,
-    );
+    // Outer Suit Silhouette
+    final suitPaint = Paint()..color = suitBaseColor;
+    canvas.drawCircle(Offset.zero, 24, suitPaint);
 
-    // Elemental Dual Blades
-    final bladePaint = Paint()
-      ..color = AppColors.white
-      ..style = PaintingStyle.fill;
-    final bladeGlow = Paint()
-      ..color = AppColors.frostPrimary
-      ..strokeWidth = 3.0
+    // Blue / Accent Flanks
+    final flankPaint = Paint()..color = suitAccentColor;
+    final flankPath = Path()
+      ..addArc(Rect.fromCircle(center: Offset.zero, radius: 24), -pi / 3, 2 * pi / 3);
+    canvas.drawPath(flankPath, flankPaint);
+
+    final leftFlankPath = Path()
+      ..addArc(Rect.fromCircle(center: Offset.zero, radius: 24), 2 * pi / 3, 2 * pi / 3);
+    canvas.drawPath(leftFlankPath, flankPaint);
+
+    // Web Lines Texture on Mask & Suit
+    final webMeshPaint = Paint()
+      ..color = isSymbioteSuit ? AppColors.venomGlow.withValues(alpha: 0.4) : AppColors.black45
+      ..strokeWidth = 1.2
       ..style = PaintingStyle.stroke;
+    canvas.drawLine(const Offset(-22, 0), const Offset(22, 0), webMeshPaint);
+    canvas.drawLine(const Offset(0, -22), const Offset(0, 22), webMeshPaint);
+    canvas.drawCircle(Offset.zero, 14, webMeshPaint);
 
-    // Main Blade
-    final bladeOffset = hero.isAttacking ? 22.0 : 14.0;
-    final bladePath = Path()
-      ..moveTo(12, 16)
-      ..lineTo(12 + bladeOffset, 16)
-      ..lineTo(16 + bladeOffset, 18)
-      ..lineTo(12 + bladeOffset, 20)
-      ..lineTo(12, 20)
-      ..close();
+    // Iconic Spider Emblem on Chest
+    final spiderEmblemPaint = Paint()
+      ..color = isSymbioteSuit ? AppColors.white : AppColors.black
+      ..style = PaintingStyle.fill;
+    _drawSpiderEmblem(canvas, spiderEmblemPaint);
 
-    canvas.drawPath(bladePath, bladePaint);
-    canvas.drawPath(bladePath, bladeGlow);
+    // Spider Mask Eyes (Glowing Angled White Eyes with Black Border)
+    _drawSpiderEyes(canvas, isSymbioteSuit);
 
-    // Offhand Blade
-    final offBladePath = Path()
-      ..moveTo(12, -16)
-      ..lineTo(12 + bladeOffset * 0.8, -16)
-      ..lineTo(15 + bladeOffset * 0.8, -18)
-      ..lineTo(12 + bladeOffset * 0.8, -20)
-      ..lineTo(12, -20)
-      ..close();
-
-    canvas.drawPath(offBladePath, bladePaint);
-    canvas.drawPath(offBladePath, bladeGlow);
-
-    // 4. Render Slash Arc if attacking
+    // Attack Slash / Acrobat Kick Arc VFX
     if (hero.isAttacking) {
+      final swingProgress = 1.0 - (hero.attackTimer / 0.2);
       final slashPaint = Paint()
-        ..style = PaintingStyle.stroke
+        ..color = (isSymbioteSuit ? AppColors.carnageCrimson : AppColors.webFluidBlue)
+            .withValues(alpha: 0.8)
         ..strokeWidth = 5.0
+        ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round
-        ..shader = SweepGradient(
-          colors: [
-            AppColors.transparent,
-            AppColors.frostPrimary.withValues(alpha: 0.5),
-            AppColors.white,
-          ],
-        ).createShader(Rect.fromCircle(center: Offset.zero, radius: 48));
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);
 
-      final slashAngle = (hero.attackComboIndex % 2 == 0) ? -0.8 : 0.8;
-      canvas.drawArc(
-        Rect.fromCircle(center: Offset.zero, radius: 46),
-        -pi / 4 + slashAngle * 0.4,
-        pi / 2,
-        false,
-        slashPaint,
-      );
+      final sweepAngle = pi * 0.9;
+      final startAngle = -sweepAngle / 2 + (swingProgress * sweepAngle);
+      final slashRect = Rect.fromCircle(center: Offset.zero, radius: 46);
+      canvas.drawArc(slashRect, startAngle - 0.4, 0.8, false, slashPaint);
     }
 
     canvas.restore();
+  }
+
+  static void _drawSpiderEmblem(Canvas canvas, Paint paint) {
+    canvas.drawOval(Rect.fromCenter(center: const Offset(0, 0), width: 6, height: 12), paint);
+    // Spider legs
+    canvas.drawLine(const Offset(0, -3), const Offset(12, -8), paint..strokeWidth = 1.5);
+    canvas.drawLine(const Offset(0, -1), const Offset(14, -2), paint..strokeWidth = 1.5);
+    canvas.drawLine(const Offset(0, 1), const Offset(13, 6), paint..strokeWidth = 1.5);
+    canvas.drawLine(const Offset(0, 3), const Offset(11, 12), paint..strokeWidth = 1.5);
+
+    canvas.drawLine(const Offset(0, -3), const Offset(-12, -8), paint..strokeWidth = 1.5);
+    canvas.drawLine(const Offset(0, -1), const Offset(-14, -2), paint..strokeWidth = 1.5);
+    canvas.drawLine(const Offset(0, 1), const Offset(-13, 6), paint..strokeWidth = 1.5);
+    canvas.drawLine(const Offset(0, 3), const Offset(-11, 12), paint..strokeWidth = 1.5);
+  }
+
+  static void _drawSpiderEyes(Canvas canvas, bool isSymbiote) {
+    final eyeBlackBorder = Paint()..color = AppColors.black;
+    final eyeWhiteFill = Paint()..color = isSymbiote ? AppColors.webGlow : AppColors.white;
+
+    final rightEyePath = Path()
+      ..moveTo(6, -10)
+      ..lineTo(18, -14)
+      ..lineTo(14, -4)
+      ..close();
+    canvas.drawPath(rightEyePath, eyeBlackBorder);
+    canvas.drawPath(rightEyePath, eyeWhiteFill);
+
+    final leftEyePath = Path()
+      ..moveTo(6, 10)
+      ..lineTo(18, 14)
+      ..lineTo(14, 4)
+      ..close();
+    canvas.drawPath(leftEyePath, eyeBlackBorder);
+    canvas.drawPath(leftEyePath, eyeWhiteFill);
   }
 }

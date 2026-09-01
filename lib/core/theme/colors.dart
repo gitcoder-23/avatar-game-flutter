@@ -180,6 +180,15 @@ class AppColors {
   static const Color manaBlue = webFluidBlue;
   static const Color manaBlueLight = webFluidBlueLight;
 
+  static const LinearGradient glassGradient = LinearGradient(
+    colors: [
+      Color(0x3364B5F6),
+      Color(0x1A64B5F6),
+    ],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
   static const LinearGradient frostGradient = LinearGradient(
     colors: [spiderRed, spiderBlueLight],
     begin: Alignment.topLeft,

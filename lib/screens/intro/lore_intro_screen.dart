@@ -19,8 +19,8 @@ class LoreSlide {
     required this.title,
     required this.narrative,
     required this.icon,
-    required this.primaryColor,
     required this.glowColor,
+    required this.primaryColor,
   });
 }
 
@@ -42,40 +42,40 @@ class _LoreIntroScreenState extends State<LoreIntroScreen> {
 
   final List<LoreSlide> _slides = const [
     LoreSlide(
-      chapter: 'PROLOGUE I',
-      title: 'THE SHATTERING OF AETHELGARD',
+      chapter: 'COMIC ISSUE #1',
+      title: 'THE ALIEN SYMBIOTE METEOR',
       narrative:
-          'For eons, the Quad-Elemental Nexus kept peace across the celestial realm. But darkness stirred deep within the void, tearing open dimensional fissures across the sacred domains.',
+          'Deep in the night sky over New York City, a classified Oscorp space shuttle crashed into Manhattan, releasing an aggressive extraterrestrial Symbiote entity.',
       icon: Icons.public_off_rounded,
-      primaryColor: AppColors.frostPrimary,
-      glowColor: AppColors.frostGlow,
+      primaryColor: AppColors.spiderRed,
+      glowColor: AppColors.spiderGlow,
     ),
     LoreSlide(
-      chapter: 'PROLOGUE II',
-      title: 'RISE OF DREAD TITAN MALAKOR',
+      chapter: 'COMIC ISSUE #2',
+      title: 'MANHATTAN UNDER SIEGE',
       narrative:
-          'At the Celestial Core, Malakor—the Primordial Dread Titan—awoke, corrupting the creatures of Whispering Woods, Blazing Caverns, Frost Temples, Tempest Citadel, and the Void Abyss.',
+          'The Symbiote rapidly bonded with street gangs, Oscorp cyber drones, and subway mutagens. Chaos erupted across Queens, Times Square, and the Financial District.',
       icon: Icons.warning_rounded,
-      primaryColor: AppColors.healthRed,
-      glowColor: AppColors.healthRedLight,
+      primaryColor: AppColors.symbiotePurple,
+      glowColor: AppColors.venomGlow,
     ),
     LoreSlide(
-      chapter: 'PROLOGUE III',
-      title: 'AWAKENING OF THE AVATAR',
+      chapter: 'COMIC ISSUE #3',
+      title: 'RISE OF VENOM & CARNAGE',
       narrative:
-          'You are chosen as the Avatar, the sole warrior imbued with the Quad-Element Catalyst. Master the powers of Frost Nova, Inferno Meteor, and Void Blink to reclaim the celestial realm.',
-      icon: Icons.auto_awesome_rounded,
-      primaryColor: AppColors.celestialGold,
-      glowColor: AppColors.stormGlow,
+          'At the apex of Oscorp Tower, the primary organism matured into VENOM—a hulking Symbiote Overlord armed with colossal tendrils, razor fangs, and lethal shockwaves.',
+      icon: Icons.dangerous_rounded,
+      primaryColor: AppColors.carnageCrimson,
+      glowColor: AppColors.carnageGlow,
     ),
     LoreSlide(
-      chapter: 'PROLOGUE IV',
-      title: 'THE SIX-STAGE CRUSADE',
+      chapter: 'COMIC ISSUE #4',
+      title: 'SPIDER-HERO STRIKE',
       narrative:
-          'Conquer all 5 elemental strongholds, build your blade combo mastery, and confront Malakor in the ultimate 3-Phase Boss Showdown at the Celestial Core!',
-      icon: Icons.military_tech_rounded,
-      primaryColor: AppColors.voidSecondary,
-      glowColor: AppColors.voidGlow,
+          'Suit up, Web-Slinger! Master Web-Zip strikes, radial Web-Net clusters, and your own Symbiote Tendril powers to purge the 6 City Districts and defeat Venom!',
+      icon: Icons.shield_moon_rounded,
+      primaryColor: AppColors.spiderBlueLight,
+      glowColor: AppColors.webFluidBlue,
     ),
   ];
 
@@ -118,11 +118,11 @@ class _LoreIntroScreenState extends State<LoreIntroScreen> {
       backgroundColor: AppColors.bgDark,
       body: Stack(
         children: [
-          // Background Nebula
+          // Background City Night
           Positioned.fill(
             child: Container(
               decoration: const BoxDecoration(
-                gradient: AppColors.nebulaBackground,
+                gradient: AppColors.cityNightGradient,
               ),
             ),
           ),
@@ -139,19 +139,19 @@ class _LoreIntroScreenState extends State<LoreIntroScreen> {
                       Row(
                         children: [
                           Container(
-                            width: 24,
-                            height: 24,
-                            decoration: BoxDecoration(
+                            width: 26,
+                            height: 26,
+                            decoration: const BoxDecoration(
                               shape: BoxShape.circle,
-                              gradient: AppColors.frostGradient,
+                              gradient: AppColors.spiderGradient,
                             ),
-                            child: const Icon(Icons.shield_moon_rounded, size: 14, color: AppColors.white),
+                            child: const Icon(Icons.shield_moon_rounded, size: 16, color: AppColors.white),
                           ),
                           const SizedBox(width: 8),
-                          Text(
-                            'AVATAR CHRONICLES',
+                          const Text(
+                            'SPIDER-HERO CHRONICLES',
                             style: TextStyle(
-                              color: AppColors.frostPrimary.withValues(alpha: 0.9),
+                              color: AppColors.spiderRedLight,
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 2.0,
@@ -168,7 +168,7 @@ class _LoreIntroScreenState extends State<LoreIntroScreen> {
                         onPressed: _goToWorldMap,
                         icon: const Icon(Icons.skip_next_rounded, color: AppColors.white60, size: 16),
                         label: const Text(
-                          'SKIP TO MAP',
+                          'SKIP TO DISTRICTS',
                           style: TextStyle(color: AppColors.white60, fontSize: 11, fontWeight: FontWeight.bold),
                         ),
                       ),
@@ -297,7 +297,7 @@ class _LoreIntroScreenState extends State<LoreIntroScreen> {
                             width: isActive ? 22 : 6,
                             height: 6,
                             decoration: BoxDecoration(
-                              color: isActive ? AppColors.frostPrimary : AppColors.white24,
+                              color: isActive ? AppColors.spiderRed : AppColors.white24,
                               borderRadius: BorderRadius.circular(3),
                             ),
                           );
@@ -306,13 +306,14 @@ class _LoreIntroScreenState extends State<LoreIntroScreen> {
 
                       // Next / Start Button
                       GlowingButton(
-                        text: _currentPage == _slides.length - 1 ? 'START TUTORIAL' : 'NEXT CHAPTER',
+                        text: _currentPage == _slides.length - 1 ? 'START DISTRICT 1: TUTORIAL' : 'NEXT ISSUE',
                         icon: _currentPage == _slides.length - 1 ? Icons.play_arrow_rounded : Icons.arrow_forward_rounded,
                         height: 38,
                         fontSize: 12,
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        backgroundColor: AppColors.frostPrimary,
-                        textColor: AppColors.black,
+                        backgroundColor: AppColors.spiderRed,
+                        textColor: AppColors.white,
+                        glowColor: AppColors.spiderGlow,
                         onPressed: _nextPage,
                       ),
                     ],

@@ -2,16 +2,23 @@ import 'package:flutter/material.dart';
 import '../core/constants/game_constants.dart';
 import '../core/theme/colors.dart';
 
+enum SkillId {
+  frostNova,     // Web Net Cluster (Entangle / Stun)
+  infernoComet,  // Symbiote Tendril Spike (Radial Burst)
+  voidDash,      // Web-Zip Strike (Grapple Pull / Invulnerability)
+  celestialNova, // Venom Carnage Cataclysm (Ultimate)
+}
+
 class SkillModel {
   final SkillId id;
   final String name;
   final String description;
-  final ElementType element;
-  final double cooldownSeconds;
-  final double manaCost;
-  final double damageMultiplier;
-  final double radius;
   final IconData icon;
+  final double manaCost;
+  final double cooldownSeconds;
+  final double damageMultiplier;
+  final double areaOfEffectRadius;
+  final ElementType element;
   final Color color;
 
   double currentCooldown;
@@ -20,78 +27,71 @@ class SkillModel {
     required this.id,
     required this.name,
     required this.description,
-    required this.element,
-    required this.cooldownSeconds,
-    required this.manaCost,
-    required this.damageMultiplier,
-    required this.radius,
     required this.icon,
+    required this.manaCost,
+    required this.cooldownSeconds,
+    required this.damageMultiplier,
+    required this.areaOfEffectRadius,
+    required this.element,
     required this.color,
     this.currentCooldown = 0.0,
   });
 
   bool get isReady => currentCooldown <= 0.0;
-  double get cooldownProgress => currentCooldown / cooldownSeconds;
+
+  double get cooldownProgress => (currentCooldown / cooldownSeconds).clamp(0.0, 1.0);
+
+  void trigger() {
+    currentCooldown = cooldownSeconds;
+  }
 
   void updateCooldown(double dt) {
-    if (currentCooldown > 0.0) {
+    if (currentCooldown > 0) {
       currentCooldown = (currentCooldown - dt).clamp(0.0, cooldownSeconds);
     }
   }
 
-  void trigger() {
-    currentCooldown = cooldownSeconds;
+  void reset() {
+    currentCooldown = 0.0;
   }
 
   static List<SkillModel> getDefaultSkills() {
     return [
       SkillModel(
         id: SkillId.frostNova,
-        name: 'Frost Nova',
-        description: 'Blasts glacial energy in a wide circular perimeter, freezing and slowing all nearby foes.',
-        element: ElementType.frost,
-        cooldownSeconds: 4.5,
-        manaCost: 25.0,
+        name: 'Web Net Cluster',
+        description: 'Fires high-tensile sticky spider webbing in a 360° radius, trapping and immobilizing all nearby enemies for 3.5s.',
+        icon: Icons.grain_rounded,
+        manaCost: 35.0,
+        cooldownSeconds: 5.0,
         damageMultiplier: 2.2,
-        radius: 180.0,
-        icon: Icons.ac_unit_rounded,
-        color: AppColors.frostPrimary,
+        areaOfEffectRadius: 210.0,
+        element: ElementType.spiderWeb,
+        color: AppColors.webFluidBlue,
       ),
       SkillModel(
         id: SkillId.infernoComet,
-        name: 'Inferno Comet',
-        description: 'Summons a blazing meteorite that crashes with explosive area-of-effect damage.',
-        element: ElementType.fire,
-        cooldownSeconds: 6.0,
-        manaCost: 40.0,
-        damageMultiplier: 4.5,
-        radius: 220.0,
-        icon: Icons.local_fire_department_rounded,
-        color: AppColors.fireSecondary,
+        name: 'Symbiote Tendril Surge',
+        description: 'Erupts chaotic black and crimson Symbiote tendril spikes around Spider-Hero, piercing enemies with critical bleed damage.',
+        icon: Icons.alt_route_rounded,
+        manaCost: 55.0,
+        cooldownSeconds: 7.0,
+        damageMultiplier: 3.5,
+        areaOfEffectRadius: 240.0,
+        element: ElementType.symbiote,
+        color: AppColors.carnageCrimson,
       ),
       SkillModel(
         id: SkillId.voidDash,
-        name: 'Void Blink',
-        description: 'Instantly teleports through space, leaving a void vortex that damages pursuers with invulnerability.',
-        element: ElementType.voidElement,
-        cooldownSeconds: 3.0,
-        manaCost: 15.0,
-        damageMultiplier: 1.5,
-        radius: 100.0,
+        name: 'Web-Zip Strike',
+        description: 'Fires a high-velocity web line pulling Spider-Hero forward with complete invulnerability, delivering a devastating aerial dropkick.',
         icon: Icons.flash_on_rounded,
-        color: AppColors.voidSecondary,
-      ),
-      SkillModel(
-        id: SkillId.celestialCataclysm,
-        name: 'Celestial Cataclysm',
-        description: 'THE ULTIMATE: Channel all four primal elements to unleash an apocalyptic orbital laser barrage.',
-        element: ElementType.celestial,
-        cooldownSeconds: 20.0,
-        manaCost: 100.0,
-        damageMultiplier: 12.0,
-        radius: 400.0,
-        icon: Icons.auto_awesome_rounded,
-        color: AppColors.celestialGold,
+        manaCost: 25.0,
+        cooldownSeconds: 3.0,
+        damageMultiplier: 1.8,
+        areaOfEffectRadius: 120.0,
+        element: ElementType.spiderWeb,
+        color: AppColors.spiderRedLight,
       ),
     ];
   }

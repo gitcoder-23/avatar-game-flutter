@@ -26,6 +26,7 @@ class HeroModel {
   int attackComboIndex = 0;
   double comboResetTimer = 0.0;
 
+  bool isMoving = false;
   bool isDashing = false;
   double dashTimer = 0.0;
   bool isInvulnerable = false;
@@ -58,6 +59,10 @@ class HeroModel {
     required this.skills,
   });
 
+  String get heroName => name;
+  double get moveSpeed => speed;
+  bool get isDead => currentHp <= 0.0;
+
   factory HeroModel.fromUser(UserModel user) {
     final maxHp = GameConstants.baseHeroHp + user.bonusMaxHp;
     final maxMp = GameConstants.baseHeroMp + user.bonusMaxMp;
@@ -79,6 +84,12 @@ class HeroModel {
     );
   }
 
+  void updateSkills(double dt) {
+    for (var skill in skills) {
+      skill.updateCooldown(dt);
+    }
+  }
+
   void update(double dt) {
     // Regenerate MP slowly
     if (currentMp < maxMp) {
@@ -86,9 +97,7 @@ class HeroModel {
     }
 
     // Update Skills cooldowns
-    for (var skill in skills) {
-      skill.updateCooldown(dt);
-    }
+    updateSkills(dt);
 
     // Update Attack state
     if (isAttacking) {
@@ -129,6 +138,10 @@ class HeroModel {
         isCastingUltimate = false;
       }
     }
+  }
+
+  void takeDamage(double amount) {
+    currentHp = max(0.0, currentHp - amount);
   }
 
   void heal(double amount) {

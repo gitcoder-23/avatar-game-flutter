@@ -36,50 +36,50 @@ class _TutorialOverlayState extends State<TutorialOverlay> with SingleTickerProv
 
   final List<TutorialStep> _steps = const [
     TutorialStep(
-      title: '1. Virtual Movement Joystick',
-      description: 'Drag the glowing analog joystick on the bottom-left to navigate your Avatar freely in 360 degrees.',
+      title: '1. 360° Acrobat Movement Joystick',
+      description: 'Drag the glowing analog joystick on the bottom-left to sprint, leap, and reposition across the rooftop arena.',
       targetAlignment: Alignment(-0.75, 0.75),
       icon: Icons.navigation_rounded,
-      glowColor: AppColors.frostPrimary,
+      glowColor: AppColors.spiderRed,
     ),
     TutorialStep(
-      title: '2. Basic Elemental Slash',
-      description: 'Tap the main attack button on the bottom-right to unleash rapid 3-hit elemental blade combos with knockback!',
+      title: '2. Basic Web Punch & Acrobat Combos',
+      description: 'Tap the main attack button on the bottom-right to execute rapid 3-hit superhero martial arts with comic sound impacts ("THWACK!", "BAM!")!',
       targetAlignment: Alignment(0.85, 0.75),
       icon: Icons.colorize_rounded,
-      glowColor: AppColors.frostPrimary,
+      glowColor: AppColors.spiderRedLight,
     ),
     TutorialStep(
-      title: '3. Skill 1: Frost Nova',
-      description: 'Freezes all nearby monsters in ice for over 3 seconds, rendering them defenseless to your combos.',
+      title: '3. Skill 1: Web Net Cluster',
+      description: 'Fires high-tensile sticky spider webbing in 360° that completely immobilizes surrounding street thugs and drones.',
       targetAlignment: Alignment(0.60, 0.58),
-      icon: Icons.ac_unit_rounded,
-      glowColor: AppColors.frostGlow,
+      icon: Icons.grain_rounded,
+      glowColor: AppColors.webFluidBlue,
     ),
     TutorialStep(
-      title: '4. Skill 2: Inferno Comet',
-      description: 'Calls down a blazing celestial meteorite that detonates with massive area-of-effect critical fire damage.',
+      title: '4. Skill 2: Symbiote Tendril Surge',
+      description: 'Unleashes the alien black-suit Symbiote power, erupting sharp shadow spikes and critical radial burst damage.',
       targetAlignment: Alignment(0.78, 0.44),
-      icon: Icons.local_fire_department_rounded,
-      glowColor: AppColors.fireSecondary,
+      icon: Icons.alt_route_rounded,
+      glowColor: AppColors.carnageCrimson,
     ),
     TutorialStep(
-      title: '5. Skill 3: Void Blink Dash',
-      description: 'Teleports your Avatar forward with complete invulnerability frames to dodge boss shockwaves and laser beams.',
+      title: '5. Skill 3: Web-Zip Strike',
+      description: 'Shoots a web grapple pulling Spider-Hero directly to the nearest target with invulnerability and a crushing dropkick.',
       targetAlignment: Alignment(0.95, 0.44),
       icon: Icons.flash_on_rounded,
-      glowColor: AppColors.voidSecondary,
+      glowColor: AppColors.spiderBlueLight,
     ),
     TutorialStep(
-      title: '6. Celestial Cataclysm Ultimate',
-      description: 'Build your combo meter to charge 100% Ultimate energy and summon the quad-elemental apocalypse!',
+      title: '6. Ultimate: Venom Carnage Cataclysm',
+      description: 'Fill your 100% superhero combo gauge to trigger a full-screen orbital web slam and symbiote shockwave explosion!',
       targetAlignment: Alignment(0.55, 0.88),
       icon: Icons.auto_awesome_rounded,
-      glowColor: AppColors.celestialGold,
+      glowColor: AppColors.electricGold,
     ),
     TutorialStep(
-      title: '7. Elixir of Life & Mana',
-      description: 'Tap the potion icon to instantly restore 50% HP and 50% Mana during intense boss clashes.',
+      title: '7. Nanotech Medical Potion',
+      description: 'Tap the potion icon on the top-left to instantly restore 50% HP and 50% Web Fluid during intense boss showdowns.',
       targetAlignment: Alignment(-0.85, -0.85),
       icon: Icons.medical_services_rounded,
       glowColor: AppColors.potionGreen,
@@ -155,7 +155,7 @@ class _TutorialOverlayState extends State<TutorialOverlay> with SingleTickerProv
             ),
           ),
 
-          // Dialog Card (Landscape Optimized & Centered)
+          // Dialog Card
           Center(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -186,7 +186,7 @@ class _TutorialOverlayState extends State<TutorialOverlay> with SingleTickerProv
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'TUTORIAL (${_currentStepIndex + 1}/${_steps.length})',
+                                  'HERO TRAINING (${_currentStepIndex + 1}/${_steps.length})',
                                   style: TextStyle(
                                     color: step.glowColor,
                                     fontSize: 10,
@@ -234,7 +234,7 @@ class _TutorialOverlayState extends State<TutorialOverlay> with SingleTickerProv
                             ),
                           ),
                           GlowingButton(
-                            text: _currentStepIndex == _steps.length - 1 ? 'START BATTLE!' : 'NEXT HINT',
+                            text: _currentStepIndex == _steps.length - 1 ? 'SWING INTO ACTION!' : 'NEXT HINT',
                             icon: _currentStepIndex == _steps.length - 1 ? Icons.check_circle : Icons.arrow_forward_rounded,
                             height: 36,
                             fontSize: 11,

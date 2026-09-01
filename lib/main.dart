@@ -41,7 +41,7 @@ class AvatarGameApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'AVATAR: Elemental Odyssey',
+      title: 'SPIDER-HERO: Symbiote Strike',
       debugShowCheckedModeBanner: false,
       theme: GameTheme.themeData.copyWith(
         textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme),

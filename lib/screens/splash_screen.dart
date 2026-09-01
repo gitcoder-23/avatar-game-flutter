@@ -60,16 +60,16 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       backgroundColor: AppColors.bgDark,
       body: Stack(
         children: [
-          // Background Gradient Nebula
+          // Background Gradient City Night
           Positioned.fill(
             child: Container(
               decoration: const BoxDecoration(
-                gradient: AppColors.nebulaBackground,
+                gradient: AppColors.cityNightGradient,
               ),
             ),
           ),
 
-          // Glowing Rune Core in Center (Optimized for Cinema Landscape)
+          // Glowing Spider Emblem Core in Center
           Center(
             child: SingleChildScrollView(
               child: AnimatedBuilder(
@@ -83,19 +83,19 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                         ScaleTransition(
                           scale: _scaleAnimation,
                           child: Container(
-                            width: 100,
-                            height: 100,
+                            width: 110,
+                            height: 110,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              gradient: AppColors.celestialGradient,
+                              gradient: AppColors.spiderGradient,
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.frostPrimary.withValues(alpha: _glowAnimation.value * 0.8),
+                                  color: AppColors.spiderRed.withValues(alpha: _glowAnimation.value * 0.8),
                                   blurRadius: 36,
                                   spreadRadius: 8,
                                 ),
                                 BoxShadow(
-                                  color: AppColors.firePrimary.withValues(alpha: _glowAnimation.value * 0.5),
+                                  color: AppColors.spiderBlue.withValues(alpha: _glowAnimation.value * 0.6),
                                   blurRadius: 50,
                                   spreadRadius: 12,
                                 ),
@@ -104,45 +104,45 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                             child: const Center(
                               child: Icon(
                                 Icons.shield_moon_rounded,
-                                color: AppColors.black87,
-                                size: 56,
+                                color: AppColors.white,
+                                size: 62,
                               ),
                             ),
                           ),
                         ),
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 16),
 
                         // Game Title
                         ShaderMask(
-                          shaderCallback: (bounds) => AppColors.celestialGradient.createShader(bounds),
+                          shaderCallback: (bounds) => AppColors.spiderGradient.createShader(bounds),
                           child: const Text(
-                            'A V A T A R',
+                            'SPIDER-HERO',
                             style: TextStyle(
                               color: AppColors.white,
                               fontSize: 38,
                               fontWeight: FontWeight.w900,
-                              letterSpacing: 12.0,
+                              letterSpacing: 8.0,
                             ),
                           ),
                         ),
-                        const SizedBox(height: 6),
+                        const SizedBox(height: 4),
 
                         Text(
-                          'THE ELEMENTAL ODYSSEY',
+                          'SYMBIOTE STRIKE : VENOM CARNAGE',
                           style: TextStyle(
-                            color: AppColors.frostPrimary.withValues(alpha: 0.9),
-                            fontSize: 13,
+                            color: AppColors.carnageCrimson,
+                            fontSize: 12,
                             fontWeight: FontWeight.bold,
-                            letterSpacing: 4.0,
+                            letterSpacing: 3.5,
                           ),
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 20),
 
                         // Loading Indicator
                         SizedBox(
                           width: 200,
                           child: LinearProgressIndicator(
-                            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.frostPrimary),
+                            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.spiderRed),
                             backgroundColor: AppColors.white12,
                             minHeight: 4,
                             borderRadius: BorderRadius.circular(2),
@@ -150,7 +150,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                         ),
                         const SizedBox(height: 10),
                         const Text(
-                          'INITIALIZING 60FPS GAME ENGINE...',
+                          'INITIALIZING MANHATTAN CRIME RADAR...',
                           style: TextStyle(
                             color: AppColors.white38,
                             fontSize: 10,

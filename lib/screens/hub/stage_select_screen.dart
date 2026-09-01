@@ -87,11 +87,11 @@ class _StageSelectScreenState extends State<StageSelectScreen> {
       backgroundColor: AppColors.bgDark,
       body: Stack(
         children: [
-          // Background Cosmic Nebula
+          // Background City Night
           Positioned.fill(
             child: Container(
               decoration: const BoxDecoration(
-                gradient: AppColors.nebulaBackground,
+                gradient: AppColors.cityNightGradient,
               ),
             ),
           ),
@@ -100,7 +100,7 @@ class _StageSelectScreenState extends State<StageSelectScreen> {
             child: Column(
               children: [
                 _buildHeader(),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
 
                 // World Map Title Banner
                 Padding(
@@ -112,42 +112,42 @@ class _StageSelectScreenState extends State<StageSelectScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'CELESTIAL REALMS',
+                            'MANHATTAN CRIME MAP',
                             style: TextStyle(
                               color: AppColors.white,
-                              fontSize: 20,
+                              fontSize: 18,
                               fontWeight: FontWeight.w900,
                               letterSpacing: 2.0,
                             ),
                           ),
                           Text(
-                            'Select a corrupted domain to purge',
-                            style: TextStyle(color: AppColors.white54, fontSize: 12),
+                            'Select a contaminated district to patrol and cleanse',
+                            style: TextStyle(color: AppColors.white54, fontSize: 11),
                           ),
                         ],
                       ),
                       GlowingButton(
-                        text: 'HERO CODEX',
+                        text: 'SUIT LAB',
                         icon: Icons.shield_moon_rounded,
                         isOutlined: true,
-                        backgroundColor: AppColors.frostPrimary,
-                        textColor: AppColors.frostPrimary,
-                        height: 42,
-                        fontSize: 12,
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        backgroundColor: AppColors.spiderRedLight,
+                        textColor: AppColors.spiderRedLight,
+                        height: 38,
+                        fontSize: 11,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         onPressed: _openHeroSanctuary,
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 10),
 
                 // 6-Stage List
                 Expanded(
                   child: _isLoading
-                      ? const Center(child: CircularProgressIndicator(color: AppColors.frostPrimary))
+                      ? const Center(child: CircularProgressIndicator(color: AppColors.spiderRed))
                       : ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
                           itemCount: 6,
                           itemBuilder: (context, index) {
                             final stageId = index + 1;
@@ -175,10 +175,10 @@ class _StageSelectScreenState extends State<StageSelectScreen> {
 
   Widget _buildHeader() {
     return GlassCard(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      radius: 18,
-      borderColor: AppColors.borderGlass,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      radius: 16,
+      borderColor: AppColors.spiderRed.withValues(alpha: 0.5),
       child: Row(
         children: [
           // Hero Avatar & Level
@@ -187,15 +187,14 @@ class _StageSelectScreenState extends State<StageSelectScreen> {
             child: Stack(
               children: [
                 Container(
-                  width: 46,
-                  height: 46,
-                  decoration: BoxDecoration(
+                  width: 42,
+                  height: 42,
+                  decoration: const BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: AppColors.frostGradient,
-                    border: Border.all(color: AppColors.white, width: 1.5),
+                    gradient: AppColors.spiderGradient,
                   ),
                   child: const Center(
-                    child: Icon(Icons.shield_moon_rounded, color: AppColors.white, size: 24),
+                    child: Icon(Icons.shield_moon_rounded, color: AppColors.white, size: 22),
                   ),
                 ),
                 Positioned(
@@ -206,7 +205,7 @@ class _StageSelectScreenState extends State<StageSelectScreen> {
               ],
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
 
           // Hero Name & Title
           Expanded(
@@ -215,11 +214,11 @@ class _StageSelectScreenState extends State<StageSelectScreen> {
               children: [
                 Text(
                   _user.heroName,
-                  style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold, fontSize: 15),
+                  style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold, fontSize: 14),
                 ),
-                Text(
-                  'Quad-Elemental Avatar',
-                  style: TextStyle(color: AppColors.frostPrimary.withValues(alpha: 0.8), fontSize: 11),
+                const Text(
+                  'Web-Slinger of New York',
+                  style: TextStyle(color: AppColors.spiderRedLight, fontSize: 10),
                 ),
               ],
             ),
@@ -233,7 +232,7 @@ class _StageSelectScreenState extends State<StageSelectScreen> {
               CurrencyBadge(icon: Icons.diamond_rounded, amount: _user.crystals, color: AppColors.crystalCurrency),
               const SizedBox(width: 8),
               IconButton(
-                icon: const Icon(Icons.settings_rounded, color: AppColors.white70, size: 22),
+                icon: const Icon(Icons.settings_rounded, color: AppColors.white70, size: 20),
                 onPressed: _openSettings,
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
@@ -250,17 +249,17 @@ class _StageSelectScreenState extends State<StageSelectScreen> {
     final isBoss = stage.isBoss;
 
     return GlassCard(
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(18),
-      radius: 20,
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      radius: 16,
       borderColor: isUnlocked ? stage.primaryColor : AppColors.white12,
       glowColor: isUnlocked ? stage.primaryColor : AppColors.transparent,
       child: Row(
         children: [
-          // Stage Rune / Element Icon
+          // District Icon
           Container(
-            width: 58,
-            height: 58,
+            width: 52,
+            height: 52,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: isUnlocked ? stage.primaryColor.withValues(alpha: 0.2) : AppColors.white10,
@@ -272,7 +271,7 @@ class _StageSelectScreenState extends State<StageSelectScreen> {
                   ? [
                       BoxShadow(
                         color: stage.primaryColor.withValues(alpha: 0.4),
-                        blurRadius: 14,
+                        blurRadius: 12,
                         spreadRadius: 2,
                       ),
                     ]
@@ -281,13 +280,13 @@ class _StageSelectScreenState extends State<StageSelectScreen> {
             child: Center(
               child: Text(
                 isUnlocked ? stage.bgRune : '🔒',
-                style: const TextStyle(fontSize: 26),
+                style: const TextStyle(fontSize: 24),
               ),
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 14),
 
-          // Stage Info
+          // District Info
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -295,10 +294,10 @@ class _StageSelectScreenState extends State<StageSelectScreen> {
                 Row(
                   children: [
                     Text(
-                      'STAGE ${stage.id}',
+                      'DISTRICT ${stage.id}',
                       style: TextStyle(
                         color: isUnlocked ? stage.primaryColor : AppColors.white38,
-                        fontSize: 11,
+                        fontSize: 10,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1.5,
                       ),
@@ -306,70 +305,69 @@ class _StageSelectScreenState extends State<StageSelectScreen> {
                     if (isBoss) ...[
                       const SizedBox(width: 6),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                         decoration: BoxDecoration(
-                          color: AppColors.healthRed,
-                          borderRadius: BorderRadius.circular(6),
+                          color: AppColors.carnageCrimson,
+                          borderRadius: BorderRadius.circular(4),
                         ),
                         child: const Text(
-                          'BOSS FIGHT',
-                          style: TextStyle(color: AppColors.white, fontSize: 9, fontWeight: FontWeight.bold),
+                          'VENOM BOSS',
+                          style: TextStyle(color: AppColors.white, fontSize: 8, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
                   ],
                 ),
-                const SizedBox(height: 3),
+                const SizedBox(height: 2),
                 Text(
                   stage.name,
                   style: TextStyle(
                     color: isUnlocked ? AppColors.white : AppColors.white38,
-                    fontSize: 16,
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 2),
                 Text(
                   stage.subtitle,
-                  style: const TextStyle(color: AppColors.white54, fontSize: 11),
+                  style: const TextStyle(color: AppColors.white54, fontSize: 10),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
 
-                // Reusable Star Rating & High Score
+                // Stars & High Score
                 if (isUnlocked)
                   Row(
                     children: [
-                      StarRating(earnedStars: progress.stars, starSize: 18),
-                      const SizedBox(width: 12),
+                      StarRating(earnedStars: progress.stars, starSize: 16),
+                      const SizedBox(width: 10),
                       if (progress.highScore > 0)
                         Text(
                           'Best: ${GameUtils.formatNumber(progress.highScore)} pts',
-                          style: const TextStyle(color: AppColors.white60, fontSize: 11),
+                          style: const TextStyle(color: AppColors.white60, fontSize: 10),
                         ),
                     ],
                   )
                 else
                   const Text(
-                    'Defeat previous stage to unlock',
-                    style: TextStyle(color: AppColors.white24, fontSize: 11),
+                    'Clear previous district to unlock',
+                    style: TextStyle(color: AppColors.white24, fontSize: 10),
                   ),
               ],
             ),
           ),
 
-          // Reusable Action Button
+          // Action Button
           if (isUnlocked)
             GlowingButton(
-              text: 'BATTLE',
-              height: 42,
-              fontSize: 13,
+              text: 'SWING IN',
+              height: 38,
+              fontSize: 11,
               backgroundColor: stage.primaryColor,
               textColor: AppColors.black,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               onPressed: () => _enterStage(stage),
             )
           else
-            const Icon(Icons.lock_rounded, color: AppColors.white24, size: 28),
+            const Icon(Icons.lock_rounded, color: AppColors.white24, size: 24),
         ],
       ),
     );

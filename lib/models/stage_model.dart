@@ -1,294 +1,254 @@
 import 'package:flutter/material.dart';
-import '../core/constants/game_constants.dart';
 import '../core/theme/colors.dart';
 import 'enemy_model.dart';
 
 class WaveConfig {
   final int waveNumber;
   final List<Map<EnemyType, int>> spawns;
-  final String waveTitle;
+  final double delayBetweenSpawnsSeconds;
 
-  WaveConfig({
+  const WaveConfig({
     required this.waveNumber,
     required this.spawns,
-    required this.waveTitle,
+    this.delayBetweenSpawnsSeconds = 2.0,
   });
+
+  int get totalEnemies {
+    int total = 0;
+    for (var spawnMap in spawns) {
+      for (var count in spawnMap.values) {
+        total += count;
+      }
+    }
+    return total;
+  }
 }
 
 class StageModel {
   final int id;
   final String name;
   final String subtitle;
-  final ElementType element;
+  final String description;
+  final String bgRune;
   final Color primaryColor;
   final Color secondaryColor;
-  final String bgRune;
-  final int totalWaves;
-  final bool isBoss;
+  final List<WaveConfig> waves;
   final int rewardGold;
   final int rewardXp;
-  final String description;
-  final List<WaveConfig> waves;
+  final bool isBoss;
 
-  StageModel({
+  const StageModel({
     required this.id,
     required this.name,
     required this.subtitle,
-    required this.element,
+    required this.description,
+    required this.bgRune,
     required this.primaryColor,
     required this.secondaryColor,
-    required this.bgRune,
-    required this.totalWaves,
-    required this.isBoss,
+    required this.waves,
     required this.rewardGold,
     required this.rewardXp,
-    required this.description,
-    required this.waves,
+    this.isBoss = false,
   });
 
-  static StageModel getStageById(int id) {
-    switch (id) {
-      case 1:
-        return StageModel(
-          id: 1,
-          name: 'Whispering Woods',
-          subtitle: 'Corrupted Glade of Shadows',
-          element: ElementType.storm,
-          primaryColor: AppColors.natureGreen,
-          secondaryColor: AppColors.natureDark,
-          bgRune: '🍃',
-          totalWaves: 3,
-          isBoss: false,
-          rewardGold: 300,
-          rewardXp: 250,
-          description: 'Goblins and feral shadow wolves roam the enchanted forest. Cleanse the corruption.',
-          waves: [
-            WaveConfig(
-              waveNumber: 1,
-              waveTitle: 'Wave 1: Imp Scouts Encounter',
-              spawns: [
-                {EnemyType.forestImp: 4},
-              ],
-            ),
-            WaveConfig(
-              waveNumber: 2,
-              waveTitle: 'Wave 2: Pack of Shadow Wolves',
-              spawns: [
-                {EnemyType.forestImp: 3},
-                {EnemyType.shadowWolf: 3},
-              ],
-            ),
-            WaveConfig(
-              waveNumber: 3,
-              waveTitle: 'Wave 3: Alpha Ambush',
-              spawns: [
-                {EnemyType.forestImp: 5},
-                {EnemyType.shadowWolf: 4},
-              ],
-            ),
-          ],
-        );
-      case 2:
-        return StageModel(
-          id: 2,
-          name: 'Blazing Caverns',
-          subtitle: 'Infernal Molten Depths',
-          element: ElementType.fire,
-          primaryColor: AppColors.fireSecondary,
-          secondaryColor: AppColors.fireDark,
-          bgRune: '🔥',
-          totalWaves: 3,
-          isBoss: false,
-          rewardGold: 500,
-          rewardXp: 450,
-          description: 'Lava streams flow as Fire Drakes and Magma Golems unleash scorching attacks.',
-          waves: [
-            WaveConfig(
-              waveNumber: 1,
-              waveTitle: 'Wave 1: Molten Drakes',
-              spawns: [
-                {EnemyType.fireDrake: 4},
-              ],
-            ),
-            WaveConfig(
-              waveNumber: 2,
-              waveTitle: 'Wave 2: Magma Golem March',
-              spawns: [
-                {EnemyType.fireDrake: 3},
-                {EnemyType.magmaGolem: 2},
-              ],
-            ),
-            WaveConfig(
-              waveNumber: 3,
-              waveTitle: 'Wave 3: Infernal Cataclysm',
-              spawns: [
-                {EnemyType.fireDrake: 4},
-                {EnemyType.magmaGolem: 3},
-              ],
-            ),
-          ],
-        );
-      case 3:
-        return StageModel(
-          id: 3,
-          name: 'Sunken Frost Temple',
-          subtitle: 'Frozen Glacial Sanctuary',
-          element: ElementType.frost,
-          primaryColor: AppColors.frostPrimary,
-          secondaryColor: AppColors.frostDark,
-          bgRune: '❄️',
-          totalWaves: 3,
-          isBoss: false,
-          rewardGold: 750,
-          rewardXp: 700,
-          description: 'Cryo Knights wielding ice halberds guard the ancient frozen elemental fountain.',
-          waves: [
-            WaveConfig(
-              waveNumber: 1,
-              waveTitle: 'Wave 1: Frost Wraiths',
-              spawns: [
-                {EnemyType.frostWraith: 5},
-              ],
-            ),
-            WaveConfig(
-              waveNumber: 2,
-              waveTitle: 'Wave 2: Cryo Vanguard',
-              spawns: [
-                {EnemyType.frostWraith: 3},
-                {EnemyType.cryoKnight: 2},
-              ],
-            ),
-            WaveConfig(
-              waveNumber: 3,
-              waveTitle: 'Wave 3: Glacial Phalanx',
-              spawns: [
-                {EnemyType.frostWraith: 4},
-                {EnemyType.cryoKnight: 3},
-              ],
-            ),
-          ],
-        );
-      case 4:
-        return StageModel(
-          id: 4,
-          name: 'Tempest Peak Citadel',
-          subtitle: 'Skyward Thunder Bastion',
-          element: ElementType.storm,
-          primaryColor: AppColors.stormPrimary,
-          secondaryColor: AppColors.stormDark,
-          bgRune: '⚡',
-          totalWaves: 4,
-          isBoss: false,
-          rewardGold: 1100,
-          rewardXp: 1000,
-          description: 'High altitude lightning wardens and thunder harpies strike from the stormy heavens.',
-          waves: [
-            WaveConfig(
-              waveNumber: 1,
-              waveTitle: 'Wave 1: Harpy Flight',
-              spawns: [
-                {EnemyType.stormHarpy: 5},
-              ],
-            ),
-            WaveConfig(
-              waveNumber: 2,
-              waveTitle: 'Wave 2: Lightning Bastion',
-              spawns: [
-                {EnemyType.stormHarpy: 4},
-                {EnemyType.thunderWarden: 2},
-              ],
-            ),
-            WaveConfig(
-              waveNumber: 3,
-              waveTitle: 'Wave 3: Thunder Strike Force',
-              spawns: [
-                {EnemyType.stormHarpy: 5},
-                {EnemyType.thunderWarden: 3},
-              ],
-            ),
-            WaveConfig(
-              waveNumber: 4,
-              waveTitle: 'Wave 4: Tempest Overload',
-              spawns: [
-                {EnemyType.stormHarpy: 6},
-                {EnemyType.thunderWarden: 4},
-              ],
-            ),
-          ],
-        );
-      case 5:
-        return StageModel(
-          id: 5,
-          name: 'Void Abyss',
-          subtitle: 'Nether Rift of Shadows',
-          element: ElementType.voidElement,
-          primaryColor: AppColors.voidSecondary,
-          secondaryColor: AppColors.voidDark,
-          bgRune: '🔮',
-          totalWaves: 4,
-          isBoss: false,
-          rewardGold: 1600,
-          rewardXp: 1500,
-          description: 'Dark archmages warp the fabric of reality with void rifts and phantom illusions.',
-          waves: [
-            WaveConfig(
-              waveNumber: 1,
-              waveTitle: 'Wave 1: Shadow Stalkers',
-              spawns: [
-                {EnemyType.voidStalker: 6},
-              ],
-            ),
-            WaveConfig(
-              waveNumber: 2,
-              waveTitle: 'Wave 2: Dark Archmage Ritual',
-              spawns: [
-                {EnemyType.voidStalker: 4},
-                {EnemyType.darkArchmage: 2},
-              ],
-            ),
-            WaveConfig(
-              waveNumber: 3,
-              waveTitle: 'Wave 3: Nether Rift Incursion',
-              spawns: [
-                {EnemyType.voidStalker: 5},
-                {EnemyType.darkArchmage: 3},
-              ],
-            ),
-            WaveConfig(
-              waveNumber: 4,
-              waveTitle: 'Wave 4: Void Singularity',
-              spawns: [
-                {EnemyType.voidStalker: 6},
-                {EnemyType.darkArchmage: 4},
-              ],
-            ),
-          ],
-        );
-      case 6:
-      default:
-        return StageModel(
-          id: 6,
-          name: 'The Celestial Core',
-          subtitle: 'BOSS FIGHT: Malakor, Dread Titan',
-          element: ElementType.celestial,
-          primaryColor: AppColors.healthRed,
-          secondaryColor: AppColors.celestialGold,
-          bgRune: '👑',
-          totalWaves: 1,
-          isBoss: true,
-          rewardGold: 5000,
-          rewardXp: 5000,
-          description: 'The ultimate showdown against the 3-Phase Primordial Dread Titan to save Aethelgard.',
-          waves: [
-            WaveConfig(
-              waveNumber: 1,
-              waveTitle: 'FINAL CLASH: TITAN MALAKOR',
-              spawns: [
-                {EnemyType.dreadTitanBoss: 1},
-              ],
-            ),
-          ],
-        );
-    }
+  int get totalWaves => waves.length;
+
+  static List<StageModel> getAllStages() {
+    return [
+      // Stage 1
+      const StageModel(
+        id: 1,
+        name: 'Queens Rooftops',
+        subtitle: 'Street Gang Outbreak',
+        description: 'Sweep across Queens apartment rooftops, subduing street brawlers and cyber scout drones with swift web combos.',
+        bgRune: '🕷️',
+        primaryColor: AppColors.spiderBlueLight,
+        secondaryColor: AppColors.spiderRed,
+        rewardGold: 300,
+        rewardXp: 400,
+        waves: [
+          WaveConfig(
+            waveNumber: 1,
+            spawns: [
+              {EnemyType.impScout: 3},
+            ],
+          ),
+          WaveConfig(
+            waveNumber: 2,
+            spawns: [
+              {EnemyType.impScout: 3, EnemyType.shadowWolf: 2},
+            ],
+          ),
+          WaveConfig(
+            waveNumber: 3,
+            spawns: [
+              {EnemyType.impScout: 4, EnemyType.shadowWolf: 3},
+            ],
+          ),
+        ],
+      ),
+
+      // Stage 2
+      const StageModel(
+        id: 2,
+        name: 'Manhattan Skyscraper Ridge',
+        subtitle: 'Armored Mercenary Ambush',
+        description: 'Navigate high-altitude construction steel beams while taking down rocket mercenaries and armored brute enforcers.',
+        bgRune: '🏗️',
+        primaryColor: AppColors.thugYellow,
+        secondaryColor: AppColors.mercRed,
+        rewardGold: 550,
+        rewardXp: 750,
+        waves: [
+          WaveConfig(
+            waveNumber: 1,
+            spawns: [
+              {EnemyType.fireDrake: 3},
+            ],
+          ),
+          WaveConfig(
+            waveNumber: 2,
+            spawns: [
+              {EnemyType.fireDrake: 3, EnemyType.magmaGolem: 1},
+            ],
+          ),
+          WaveConfig(
+            waveNumber: 3,
+            spawns: [
+              {EnemyType.fireDrake: 4, EnemyType.magmaGolem: 2},
+            ],
+          ),
+        ],
+      ),
+
+      // Stage 3
+      const StageModel(
+        id: 3,
+        name: 'Subway Underground Depths',
+        subtitle: 'First Symbiote Infestation',
+        description: 'Descend into the dark NYC subway tunnels where alien symbiote organisms are transforming subjects into feral mutants.',
+        bgRune: '🚇',
+        primaryColor: AppColors.symbiotePurple,
+        secondaryColor: AppColors.carnageCrimson,
+        rewardGold: 850,
+        rewardXp: 1200,
+        waves: [
+          WaveConfig(
+            waveNumber: 1,
+            spawns: [
+              {EnemyType.frostWraith: 3},
+            ],
+          ),
+          WaveConfig(
+            waveNumber: 2,
+            spawns: [
+              {EnemyType.frostWraith: 3, EnemyType.cryoKnight: 1},
+            ],
+          ),
+          WaveConfig(
+            waveNumber: 3,
+            spawns: [
+              {EnemyType.frostWraith: 4, EnemyType.cryoKnight: 2},
+            ],
+          ),
+        ],
+      ),
+
+      // Stage 4
+      const StageModel(
+        id: 4,
+        name: 'Oscorp Advanced Tech Labs',
+        subtitle: 'Cyber Defense Grid',
+        description: 'Infiltrate Oscorp research facilities guarded by lethal laser drones, energy shields, and high-voltage shock troopers.',
+        bgRune: '⚡',
+        primaryColor: AppColors.neonCyan,
+        secondaryColor: AppColors.electricGold,
+        rewardGold: 1250,
+        rewardXp: 1800,
+        waves: [
+          WaveConfig(
+            waveNumber: 1,
+            spawns: [
+              {EnemyType.stormHarpy: 3},
+            ],
+          ),
+          WaveConfig(
+            waveNumber: 2,
+            spawns: [
+              {EnemyType.stormHarpy: 3, EnemyType.thunderWarden: 2},
+            ],
+          ),
+          WaveConfig(
+            waveNumber: 3,
+            spawns: [
+              {EnemyType.stormHarpy: 4, EnemyType.thunderWarden: 2},
+            ],
+          ),
+        ],
+      ),
+
+      // Stage 5
+      const StageModel(
+        id: 5,
+        name: 'Times Square Catastrophe',
+        subtitle: 'Carnage Symbiote Epidemic',
+        description: 'Times Square has been overrun by massive symbiote tendrils and cyber commanders preparing for full alien assimilation.',
+        bgRune: '🌆',
+        primaryColor: AppColors.carnageCrimson,
+        secondaryColor: AppColors.symbioteBlack,
+        rewardGold: 1800,
+        rewardXp: 2600,
+        waves: [
+          WaveConfig(
+            waveNumber: 1,
+            spawns: [
+              {EnemyType.voidStalker: 3},
+            ],
+          ),
+          WaveConfig(
+            waveNumber: 2,
+            spawns: [
+              {EnemyType.voidStalker: 3, EnemyType.voidArchmage: 2},
+            ],
+          ),
+          WaveConfig(
+            waveNumber: 3,
+            spawns: [
+              {EnemyType.voidStalker: 4, EnemyType.voidArchmage: 2},
+            ],
+          ),
+        ],
+      ),
+
+      // Stage 6 (BOSS)
+      const StageModel(
+        id: 6,
+        name: 'Oscorp Tower Apex',
+        subtitle: 'VENOM SYMBIOTE OVERLORD',
+        description: 'The ultimate rooftop showdown against Venom! Dodge colossal tendril sweeps, avoid sonic shockwaves, and save New York!',
+        bgRune: '💀',
+        primaryColor: AppColors.bossPhase3,
+        secondaryColor: AppColors.bossPrimary,
+        rewardGold: 3500,
+        rewardXp: 5000,
+        isBoss: true,
+        waves: [
+          WaveConfig(
+            waveNumber: 1,
+            spawns: [
+              {EnemyType.dreadTitanBoss: 1},
+            ],
+          ),
+        ],
+      ),
+    ];
+  }
+
+  static StageModel getStageById(int stageId) {
+    final stages = getAllStages();
+    return stages.firstWhere(
+      (s) => s.id == stageId,
+      orElse: () => stages.first,
+    );
   }
 }

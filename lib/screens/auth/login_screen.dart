@@ -76,15 +76,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _fillGuestUser() async {
     setState(() {
-      _usernameController.text = 'avatar_hero';
-      _passwordController.text = 'avatar123';
+      _usernameController.text = 'spider_hero';
+      _passwordController.text = 'spider123';
     });
 
     try {
       await UserDAO.instance.register(
-        username: 'avatar_hero',
-        password: 'avatar123',
-        heroName: 'Avatar Kael',
+        username: 'spider_hero',
+        password: 'spider123',
+        heroName: 'Spider-Hero (Classic Suit)',
       );
     } catch (_) {}
 
@@ -97,11 +97,11 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: AppColors.bgDark,
       body: Stack(
         children: [
-          // Background Cosmic Nebula
+          // Background City Night Sky
           Positioned.fill(
             child: Container(
               decoration: const BoxDecoration(
-                gradient: AppColors.loginNebulaBackground,
+                gradient: AppColors.cityNightGradient,
               ),
             ),
           ),
@@ -114,7 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Left Column: Epic Game Brand / Title
+                    // Left Column: Spider-Hero Brand
                     Expanded(
                       flex: 4,
                       child: Column(
@@ -126,11 +126,11 @@ class _LoginScreenState extends State<LoginScreen> {
                             height: 76,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              gradient: AppColors.frostGradient,
+                              gradient: AppColors.spiderGradient,
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.frostPrimary.withValues(alpha: 0.5),
-                                  blurRadius: 20,
+                                  color: AppColors.spiderRed.withValues(alpha: 0.6),
+                                  blurRadius: 24,
                                   spreadRadius: 4,
                                 ),
                               ],
@@ -142,26 +142,26 @@ class _LoginScreenState extends State<LoginScreen> {
                           const SizedBox(height: 12),
 
                           ShaderMask(
-                            shaderCallback: (bounds) => AppColors.celestialGradient.createShader(bounds),
+                            shaderCallback: (bounds) => AppColors.spiderGradient.createShader(bounds),
                             child: const Text(
-                              'A V A T A R',
+                              'SPIDER-HERO',
                               style: TextStyle(
                                 color: AppColors.white,
                                 fontSize: 28,
                                 fontWeight: FontWeight.w900,
-                                letterSpacing: 8.0,
+                                letterSpacing: 6.0,
                               ),
                             ),
                           ),
                           const SizedBox(height: 4),
 
                           const Text(
-                            'ELEMENTAL ODYSSEY',
+                            'SYMBIOTE STRIKE : VENOM CARNAGE',
                             style: TextStyle(
-                              color: AppColors.frostPrimary,
-                              fontSize: 11,
+                              color: AppColors.carnageCrimson,
+                              fontSize: 10,
                               fontWeight: FontWeight.bold,
-                              letterSpacing: 2.5,
+                              letterSpacing: 2.0,
                             ),
                           ),
                           const SizedBox(height: 10),
@@ -171,10 +171,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             decoration: BoxDecoration(
                               color: AppColors.black45,
                               borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: AppColors.borderGlass),
+                              border: Border.all(color: AppColors.spiderRed.withValues(alpha: 0.4)),
                             ),
                             child: const Text(
-                              '🔥 FROST • INFERNO • VOID • TEMPEST ⚡',
+                              '🕸️ WEB-ZIP • VENOM SYMBIOTE • 3D SKYLINE 🌆',
                               style: TextStyle(color: AppColors.white70, fontSize: 9, letterSpacing: 1.0),
                             ),
                           ),
@@ -184,15 +184,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     const SizedBox(width: 16),
 
-                    // Right Column: Glassmorphic Auth Form
+                    // Right Column: Auth Card
                     Expanded(
                       flex: 5,
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 380),
                         child: GlassCard(
                           radius: 18,
-                          borderColor: AppColors.borderGlass,
-                          glowColor: AppColors.frostPrimary,
+                          borderColor: AppColors.spiderRed,
+                          glowColor: AppColors.spiderGlow,
                           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
                           child: Form(
                             key: _formKey,
@@ -201,11 +201,11 @@ class _LoginScreenState extends State<LoginScreen> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 const Text(
-                                  'WARRIOR LOGIN',
+                                  'HERO HEADQUARTERS LOGIN',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     color: AppColors.white,
-                                    fontSize: 15,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.bold,
                                     letterSpacing: 1.5,
                                   ),
@@ -239,8 +239,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                 // Username field
                                 CustomTextField(
                                   controller: _usernameController,
-                                  label: 'Username',
+                                  label: 'Hero Codename',
                                   prefixIcon: Icons.person_rounded,
+                                  focusColor: AppColors.spiderRedLight,
                                   validator: GameUtils.validateUsername,
                                 ),
                                 const SizedBox(height: 10),
@@ -248,9 +249,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                 // Password field
                                 CustomTextField(
                                   controller: _passwordController,
-                                  label: 'Password',
+                                  label: 'Security Passkey',
                                   prefixIcon: Icons.lock_rounded,
                                   obscureText: _obscurePassword,
+                                  focusColor: AppColors.spiderRedLight,
                                   validator: GameUtils.validatePassword,
                                   suffixIcon: IconButton(
                                     icon: Icon(
@@ -272,25 +274,26 @@ class _LoginScreenState extends State<LoginScreen> {
                                   children: [
                                     Expanded(
                                       child: GlowingButton(
-                                        text: 'ENTER REALM',
+                                        text: 'PATROL NYC',
                                         height: 42,
                                         fontSize: 12,
                                         isLoading: _isLoading,
-                                        backgroundColor: AppColors.frostPrimary,
-                                        textColor: AppColors.black,
+                                        backgroundColor: AppColors.spiderRed,
+                                        textColor: AppColors.white,
+                                        glowColor: AppColors.spiderGlow,
                                         onPressed: _handleLogin,
                                       ),
                                     ),
                                     const SizedBox(width: 8),
                                     Expanded(
                                       child: GlowingButton(
-                                        text: 'DEMO',
+                                        text: 'DEMO PLAY',
                                         icon: Icons.flash_on_rounded,
                                         isOutlined: true,
                                         height: 42,
                                         fontSize: 12,
-                                        backgroundColor: AppColors.stormPrimary,
-                                        textColor: AppColors.stormPrimary,
+                                        backgroundColor: AppColors.electricGold,
+                                        textColor: AppColors.electricGold,
                                         onPressed: _fillGuestUser,
                                       ),
                                     ),
@@ -298,12 +301,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                                 const SizedBox(height: 10),
 
-                                // Register link (using Wrap for zero overflow risk)
+                                // Register link
                                 Center(
                                   child: Wrap(
                                     crossAxisAlignment: WrapCrossAlignment.center,
                                     children: [
-                                      const Text('New Warrior? ', style: TextStyle(color: AppColors.white60, fontSize: 11)),
+                                      const Text('New Hero? ', style: TextStyle(color: AppColors.white60, fontSize: 11)),
                                       GestureDetector(
                                         onTap: () {
                                           Navigator.push(
@@ -312,9 +315,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                           );
                                         },
                                         child: const Text(
-                                          'REGISTER HERE',
+                                          'SUIT UP & REGISTER',
                                           style: TextStyle(
-                                            color: AppColors.frostPrimary,
+                                            color: AppColors.spiderRedLight,
                                             fontWeight: FontWeight.bold,
                                             fontSize: 11,
                                           ),

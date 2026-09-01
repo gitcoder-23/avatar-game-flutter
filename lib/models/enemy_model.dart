@@ -1,391 +1,323 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
-import '../core/constants/game_constants.dart';
 import '../core/theme/colors.dart';
 
 enum EnemyType {
   // Stage 1
-  forestImp,
-  shadowWolf,
+  impScout,       // Street Thug (Brawler)
+  shadowWolf,     // Cyber Scout Drone
+
   // Stage 2
-  fireDrake,
-  magmaGolem,
+  fireDrake,      // Rocket Mercenary
+  magmaGolem,     // Heavy Brute Enforcer
+
   // Stage 3
-  frostWraith,
-  cryoKnight,
+  frostWraith,    // Symbiote Crawler
+  cryoKnight,     // Symbiote Heavy Mutant
+
   // Stage 4
-  stormHarpy,
-  thunderWarden,
+  stormHarpy,     // Oscorp Laser Drone
+  thunderWarden,  // Shock Tech Trooper
+
   // Stage 5
-  voidStalker,
-  darkArchmage,
-  // Stage 6 Boss
-  dreadTitanBoss,
-  bossMinion,
+  voidStalker,    // Symbiote Tendril Fiend
+  voidArchmage,   // Oscorp Cyber Commander
+
+  // Stage 6 (BOSS)
+  dreadTitanBoss, // Venom / Carnage Symbiote Overlord
 }
 
 enum BossPhase {
-  phase1, // Titanic Cleaves & Ground Tremors
-  phase2, // Enrage Mode, Meteors & Minions
-  phase3, // Apocalypse Laser & Bullet Hell
+  phase1, // Symbiote Great Slashes & Ground Tentacles
+  phase2, // Carnage Symbiote Rage & Spikes
+  phase3, // Apocalypse Tendril Storm & Sonic Shriek
 }
 
 class EnemyModel {
-  String id;
-  String name;
-  EnemyType type;
-  ElementType element;
+  final EnemyType type;
+  final String name;
+  final double maxHp;
+  final double atk;
+  final double def;
+  final double moveSpeed;
+  final double attackRange;
+  final double attackCooldownSeconds;
+  final Color primaryColor;
+  final Color glowColor;
+  final double radius;
+  final bool isBoss;
+  final int scoreValue;
+
   double x;
   double y;
-  double vx;
-  double vy;
-  double radius;
-  double maxHp;
+  double facingAngle;
   double currentHp;
-  double atk;
-  double def;
-  double speed;
-  Color primaryColor;
-  Color glowColor;
-
-  // AI & States
-  bool isBoss;
-  BossPhase bossPhase;
-  double attackCooldown;
   double currentAttackCooldown;
-  double attackRange;
+  bool isFreezed;
+  double freezeTimer;
+
   bool isTelegraphing;
   double telegraphTimer;
   double telegraphMaxTime;
   double hitFlashTimer;
-  bool isFrozen;
-  double freezeTimer;
-
-  // Rewards
-  int xpValue;
-  int goldValue;
-  bool isDead;
+  BossPhase bossPhase;
 
   EnemyModel({
-    required this.id,
-    required this.name,
     required this.type,
-    required this.element,
-    required this.x,
-    required this.y,
-    this.vx = 0,
-    this.vy = 0,
-    required this.radius,
+    required this.name,
     required this.maxHp,
     required this.atk,
     required this.def,
-    required this.speed,
+    required this.moveSpeed,
+    required this.attackRange,
+    required this.attackCooldownSeconds,
     required this.primaryColor,
     required this.glowColor,
+    required this.radius,
     this.isBoss = false,
-    this.bossPhase = BossPhase.phase1,
-    required this.attackCooldown,
-    required this.attackRange,
+    this.scoreValue = 100,
+    this.x = 1200.0,
+    this.y = 800.0,
+    this.facingAngle = 0.0,
+    double? currentHp,
+    this.currentAttackCooldown = 0.0,
+    this.isFreezed = false,
+    this.freezeTimer = 0.0,
+    this.isTelegraphing = false,
+    this.telegraphTimer = 0.0,
     this.telegraphMaxTime = 0.6,
-    required this.xpValue,
-    required this.goldValue,
-  })  : currentHp = maxHp,
-        currentAttackCooldown = Random().nextDouble() * attackCooldown,
-        isTelegraphing = false,
-        telegraphTimer = 0.0,
-        hitFlashTimer = 0.0,
-        isFrozen = false,
-        freezeTimer = 0.0,
-        isDead = false;
+    this.hitFlashTimer = 0.0,
+    this.bossPhase = BossPhase.phase1,
+  }) : currentHp = currentHp ?? maxHp;
+
+  bool get isDead => currentHp <= 0;
+  bool get isFrozen => isFreezed;
+  double get speed => moveSpeed;
+  double get attackCooldown => attackCooldownSeconds;
+  int get xpValue => scoreValue;
 
   void takeDamage(double damage) {
-    final effectiveDamage = max(1.0, damage - def);
-    currentHp = max(0.0, currentHp - effectiveDamage);
+    currentHp = (currentHp - damage).clamp(0.0, maxHp);
     hitFlashTimer = 0.15;
-    if (currentHp <= 0) {
-      isDead = true;
-    }
   }
 
   void freeze(double duration) {
-    isFrozen = true;
+    isFreezed = true;
     freezeTimer = duration;
   }
 
-  void update(double dt) {
+  void updateStatus(double dt) {
     if (hitFlashTimer > 0) {
       hitFlashTimer -= dt;
     }
-
-    if (isFrozen) {
+    if (isFreezed) {
       freezeTimer -= dt;
       if (freezeTimer <= 0) {
-        isFrozen = false;
+        isFreezed = false;
+        freezeTimer = 0.0;
       }
-      return; // Frozen enemies can't move or attack
     }
-
     if (currentAttackCooldown > 0) {
-      currentAttackCooldown -= dt;
-    }
-
-    if (isTelegraphing) {
-      telegraphTimer += dt;
+      currentAttackCooldown = (currentAttackCooldown - dt).clamp(0.0, attackCooldownSeconds);
     }
   }
 
-  static EnemyModel create({
-    required EnemyType type,
-    required double x,
-    required double y,
-    int stageMultiplier = 1,
-  }) {
-    final randId = '${type.name}_${DateTime.now().microsecondsSinceEpoch}_${Random().nextInt(9999)}';
-    final mult = 1.0 + (stageMultiplier - 1) * 0.35;
+  void render(Canvas canvas, double screenX, double screenY) {
+    canvas.save();
+    canvas.translate(screenX, screenY);
+    canvas.rotate(facingAngle);
 
+    final auraPaint = Paint()
+      ..color = glowColor.withValues(alpha: 0.3)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12);
+    canvas.drawCircle(Offset.zero, radius + 8, auraPaint);
+
+    final bodyPaint = Paint()..color = (hitFlashTimer > 0) ? AppColors.white : primaryColor;
+    canvas.drawCircle(Offset.zero, radius, bodyPaint);
+
+    // Glowing Eyes
+    final eyePaint = Paint()..color = AppColors.white;
+    canvas.drawCircle(const Offset(8, -5), 3, eyePaint);
+    canvas.drawCircle(const Offset(8, 5), 3, eyePaint);
+
+    if (isFreezed) {
+      final webWrapPaint = Paint()
+        ..color = AppColors.webWhite
+        ..strokeWidth = 2.0
+        ..style = PaintingStyle.stroke;
+      canvas.drawCircle(Offset.zero, radius + 2, webWrapPaint);
+      canvas.drawLine(Offset(-radius, 0), Offset(radius, 0), webWrapPaint);
+    }
+
+    canvas.restore();
+  }
+
+  static EnemyModel createByType(EnemyType type, {double statMultiplier = 1.0}) {
     switch (type) {
-      case EnemyType.forestImp:
+      case EnemyType.impScout:
         return EnemyModel(
-          id: randId,
-          name: 'Forest Imp',
           type: type,
-          element: ElementType.storm,
-          x: x,
-          y: y,
-          radius: 20.0,
-          maxHp: 90.0 * mult,
-          atk: 14.0 * mult,
-          def: 4.0 * mult,
-          speed: 130.0,
-          primaryColor: AppColors.impGreen,
-          glowColor: AppColors.impGlow,
-          attackCooldown: 1.8,
-          attackRange: 55.0,
-          xpValue: 35,
-          goldValue: 25,
+          name: 'Street Thug',
+          maxHp: 160 * statMultiplier,
+          atk: 22 * statMultiplier,
+          def: 6 * statMultiplier,
+          moveSpeed: 140,
+          attackRange: 40,
+          attackCooldownSeconds: 1.5,
+          primaryColor: AppColors.thugYellow,
+          glowColor: AppColors.thugGlow,
+          radius: 18,
+          scoreValue: 120,
         );
       case EnemyType.shadowWolf:
         return EnemyModel(
-          id: randId,
-          name: 'Shadow Wolf',
           type: type,
-          element: ElementType.storm,
-          x: x,
-          y: y,
-          radius: 26.0,
-          maxHp: 150.0 * mult,
-          atk: 22.0 * mult,
-          def: 8.0 * mult,
-          speed: 180.0,
-          primaryColor: AppColors.wolfGreen,
-          glowColor: AppColors.wolfGlow,
-          attackCooldown: 1.4,
-          attackRange: 65.0,
-          xpValue: 55,
-          goldValue: 40,
+          name: 'Cyber Scout Drone',
+          maxHp: 190 * statMultiplier,
+          atk: 28 * statMultiplier,
+          def: 8 * statMultiplier,
+          moveSpeed: 190,
+          attackRange: 45,
+          attackCooldownSeconds: 1.3,
+          primaryColor: AppColors.droneCyan,
+          glowColor: AppColors.droneGlow,
+          radius: 20,
+          scoreValue: 150,
         );
       case EnemyType.fireDrake:
         return EnemyModel(
-          id: randId,
-          name: 'Fire Drake',
           type: type,
-          element: ElementType.fire,
-          x: x,
-          y: y,
-          radius: 24.0,
-          maxHp: 200.0 * mult,
-          atk: 32.0 * mult,
-          def: 10.0 * mult,
-          speed: 140.0,
-          primaryColor: AppColors.drakeOrange,
-          glowColor: AppColors.drakeGlow,
-          attackCooldown: 2.2,
-          attackRange: 160.0,
-          xpValue: 80,
-          goldValue: 60,
+          name: 'Rocket Mercenary',
+          maxHp: 280 * statMultiplier,
+          atk: 38 * statMultiplier,
+          def: 12 * statMultiplier,
+          moveSpeed: 130,
+          attackRange: 60,
+          attackCooldownSeconds: 1.6,
+          primaryColor: AppColors.mercRed,
+          glowColor: AppColors.mercGlow,
+          radius: 22,
+          scoreValue: 220,
         );
       case EnemyType.magmaGolem:
         return EnemyModel(
-          id: randId,
-          name: 'Magma Golem',
           type: type,
-          element: ElementType.fire,
-          x: x,
-          y: y,
-          radius: 36.0,
-          maxHp: 420.0 * mult,
-          atk: 45.0 * mult,
-          def: 22.0 * mult,
-          speed: 80.0,
-          primaryColor: AppColors.golemRust,
-          glowColor: AppColors.golemGlow,
-          attackCooldown: 2.8,
-          attackRange: 80.0,
-          xpValue: 120,
-          goldValue: 90,
+          name: 'Heavy Brute Enforcer',
+          maxHp: 460 * statMultiplier,
+          atk: 45 * statMultiplier,
+          def: 24 * statMultiplier,
+          moveSpeed: 85,
+          attackRange: 55,
+          attackCooldownSeconds: 2.2,
+          primaryColor: AppColors.mechOrange,
+          glowColor: AppColors.electricGold,
+          radius: 30,
+          scoreValue: 350,
         );
       case EnemyType.frostWraith:
         return EnemyModel(
-          id: randId,
-          name: 'Frost Wraith',
           type: type,
-          element: ElementType.frost,
-          x: x,
-          y: y,
-          radius: 24.0,
-          maxHp: 260.0 * mult,
-          atk: 38.0 * mult,
-          def: 12.0 * mult,
-          speed: 150.0,
-          primaryColor: AppColors.frostPrimary,
-          glowColor: AppColors.frostGlow,
-          attackCooldown: 2.0,
-          attackRange: 180.0,
-          xpValue: 110,
-          goldValue: 80,
+          name: 'Symbiote Crawler',
+          maxHp: 320 * statMultiplier,
+          atk: 42 * statMultiplier,
+          def: 14 * statMultiplier,
+          moveSpeed: 175,
+          attackRange: 50,
+          attackCooldownSeconds: 1.4,
+          primaryColor: AppColors.symbiotePurple,
+          glowColor: AppColors.venomGlow,
+          radius: 22,
+          scoreValue: 280,
         );
       case EnemyType.cryoKnight:
         return EnemyModel(
-          id: randId,
-          name: 'Cryo Knight',
           type: type,
-          element: ElementType.frost,
-          x: x,
-          y: y,
-          radius: 34.0,
-          maxHp: 550.0 * mult,
-          atk: 52.0 * mult,
-          def: 30.0 * mult,
-          speed: 110.0,
-          primaryColor: AppColors.knightBlue,
-          glowColor: AppColors.knightGlow,
-          attackCooldown: 2.2,
-          attackRange: 75.0,
-          xpValue: 160,
-          goldValue: 120,
+          name: 'Symbiote Heavy Mutant',
+          maxHp: 520 * statMultiplier,
+          atk: 50 * statMultiplier,
+          def: 26 * statMultiplier,
+          moveSpeed: 110,
+          attackRange: 60,
+          attackCooldownSeconds: 2.0,
+          primaryColor: AppColors.carnageCrimson,
+          glowColor: AppColors.carnageGlow,
+          radius: 28,
+          scoreValue: 400,
         );
       case EnemyType.stormHarpy:
         return EnemyModel(
-          id: randId,
-          name: 'Storm Harpy',
           type: type,
-          element: ElementType.storm,
-          x: x,
-          y: y,
-          radius: 26.0,
-          maxHp: 380.0 * mult,
-          atk: 58.0 * mult,
-          def: 16.0 * mult,
-          speed: 210.0,
-          primaryColor: AppColors.harpyYellow,
-          glowColor: AppColors.harpyGlow,
-          attackCooldown: 1.6,
-          attackRange: 90.0,
-          xpValue: 200,
-          goldValue: 150,
+          name: 'Oscorp Laser Drone',
+          maxHp: 360 * statMultiplier,
+          atk: 48 * statMultiplier,
+          def: 16 * statMultiplier,
+          moveSpeed: 210,
+          attackRange: 65,
+          attackCooldownSeconds: 1.2,
+          primaryColor: AppColors.neonCyan,
+          glowColor: AppColors.droneGlow,
+          radius: 22,
+          scoreValue: 320,
         );
       case EnemyType.thunderWarden:
         return EnemyModel(
-          id: randId,
-          name: 'Thunder Warden',
           type: type,
-          element: ElementType.storm,
-          x: x,
-          y: y,
-          radius: 38.0,
-          maxHp: 800.0 * mult,
-          atk: 70.0 * mult,
-          def: 38.0 * mult,
-          speed: 120.0,
-          primaryColor: AppColors.wardenAmber,
-          glowColor: AppColors.wardenGlow,
-          attackCooldown: 2.4,
-          attackRange: 110.0,
-          xpValue: 280,
-          goldValue: 220,
+          name: 'Shock Tech Trooper',
+          maxHp: 580 * statMultiplier,
+          atk: 56 * statMultiplier,
+          def: 30 * statMultiplier,
+          moveSpeed: 125,
+          attackRange: 55,
+          attackCooldownSeconds: 1.8,
+          primaryColor: AppColors.electricGold,
+          glowColor: AppColors.thugGlow,
+          radius: 28,
+          scoreValue: 450,
         );
       case EnemyType.voidStalker:
         return EnemyModel(
-          id: randId,
-          name: 'Void Stalker',
           type: type,
-          element: ElementType.voidElement,
-          x: x,
-          y: y,
-          radius: 28.0,
-          maxHp: 650.0 * mult,
-          atk: 82.0 * mult,
-          def: 24.0 * mult,
-          speed: 230.0,
-          primaryColor: AppColors.stalkerPurple,
-          glowColor: AppColors.voidGlow,
-          attackCooldown: 1.3,
-          attackRange: 70.0,
-          xpValue: 350,
-          goldValue: 280,
+          name: 'Symbiote Tendril Fiend',
+          maxHp: 440 * statMultiplier,
+          atk: 60 * statMultiplier,
+          def: 22 * statMultiplier,
+          moveSpeed: 195,
+          attackRange: 60,
+          attackCooldownSeconds: 1.3,
+          primaryColor: AppColors.symbiotePurple,
+          glowColor: AppColors.carnageCrimson,
+          radius: 25,
+          scoreValue: 500,
         );
-      case EnemyType.darkArchmage:
+      case EnemyType.voidArchmage:
         return EnemyModel(
-          id: randId,
-          name: 'Dark Archmage',
           type: type,
-          element: ElementType.voidElement,
-          x: x,
-          y: y,
-          radius: 32.0,
-          maxHp: 950.0 * mult,
-          atk: 110.0 * mult,
-          def: 28.0 * mult,
-          speed: 100.0,
-          primaryColor: AppColors.archmagePurple,
-          glowColor: AppColors.archmageGlow,
-          attackCooldown: 2.8,
-          attackRange: 240.0,
-          xpValue: 500,
-          goldValue: 400,
-        );
-      case EnemyType.bossMinion:
-        return EnemyModel(
-          id: randId,
-          name: 'Chaos Spawn',
-          type: type,
-          element: ElementType.voidElement,
-          x: x,
-          y: y,
-          radius: 22.0,
-          maxHp: 300.0,
-          atk: 40.0,
-          def: 10.0,
-          speed: 160.0,
-          primaryColor: AppColors.healthRed,
-          glowColor: AppColors.healthRedDim,
-          attackCooldown: 1.5,
-          attackRange: 60.0,
-          xpValue: 80,
-          goldValue: 50,
+          name: 'Oscorp Cyber Commander',
+          maxHp: 650 * statMultiplier,
+          atk: 68 * statMultiplier,
+          def: 28 * statMultiplier,
+          moveSpeed: 140,
+          attackRange: 80,
+          attackCooldownSeconds: 1.7,
+          primaryColor: AppColors.neonMagenta,
+          glowColor: AppColors.neonCyan,
+          radius: 27,
+          scoreValue: 650,
         );
       case EnemyType.dreadTitanBoss:
         return EnemyModel(
-          id: 'boss_malakor',
-          name: 'Malakor, Dread Titan',
           type: type,
-          element: ElementType.celestial,
-          x: x,
-          y: y,
-          radius: 65.0,
-          maxHp: 4500.0,
-          atk: 135.0,
-          def: 45.0,
-          speed: 100.0,
-          primaryColor: AppColors.bossPrimary,
-          glowColor: AppColors.celestialGold,
+          name: 'Venom Symbiote Overlord',
+          maxHp: 2800 * statMultiplier,
+          atk: 85 * statMultiplier,
+          def: 45 * statMultiplier,
+          moveSpeed: 145,
+          attackRange: 120,
+          attackCooldownSeconds: 1.6,
+          primaryColor: AppColors.symbioteBlack,
+          glowColor: AppColors.venomGlow,
+          radius: 52,
           isBoss: true,
-          bossPhase: BossPhase.phase1,
-          attackCooldown: 3.0,
-          attackRange: 180.0,
-          telegraphMaxTime: 0.9,
-          xpValue: 5000,
-          goldValue: 5000,
+          scoreValue: 5000,
         );
     }
   }

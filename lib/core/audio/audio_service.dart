@@ -110,12 +110,16 @@ class AudioService {
     } catch (_) {}
   }
 
+  Future<void> playVictory() async => playLevelClear();
+
   Future<void> playLevelFailed() async {
     if (!_soundEnabled) return;
     try {
       HapticFeedback.vibrate();
     } catch (_) {}
   }
+
+  Future<void> playDefeat() async => playLevelFailed();
 
   void dispose() {
     _bgmPlayer.dispose();

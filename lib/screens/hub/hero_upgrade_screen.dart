@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../core/database/user_dao.dart';
 import '../../core/theme/colors.dart';
-import '../../core/theme/game_theme.dart';
 import '../../models/skill_model.dart';
 import '../../models/user_model.dart';
+import '../../widgets/widgets.dart';
 
 class HeroUpgradeScreen extends StatefulWidget {
   final UserModel user;
@@ -92,42 +92,39 @@ class _HeroUpgradeScreenState extends State<HeroUpgradeScreen> with SingleTicker
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'HERO SANCTUARY',
+          'SPIDER-SUIT & GADGET LAB',
           style: TextStyle(
             color: AppColors.white,
             fontWeight: FontWeight.bold,
             letterSpacing: 2.0,
-            fontSize: 18,
+            fontSize: 16,
           ),
         ),
         actions: [
-          // Currency Badges
           Row(
             children: [
-              _currencyBadge(Icons.monetization_on_rounded, '${_user.gold}', AppColors.goldCurrency),
+              CurrencyBadge(icon: Icons.monetization_on_rounded, amount: _user.gold, color: AppColors.goldCurrency),
               const SizedBox(width: 8),
-              _currencyBadge(Icons.diamond_rounded, '${_user.crystals}', AppColors.crystalCurrency),
+              CurrencyBadge(icon: Icons.diamond_rounded, amount: _user.crystals, color: AppColors.crystalCurrency),
               const SizedBox(width: 16),
             ],
           ),
         ],
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: AppColors.frostPrimary,
-          labelColor: AppColors.frostPrimary,
+          indicatorColor: AppColors.spiderRed,
+          labelColor: AppColors.spiderRedLight,
           unselectedLabelColor: AppColors.white60,
           tabs: const [
-            Tab(icon: Icon(Icons.fitness_center_rounded), text: 'ATTRIBUTES'),
-            Tab(icon: Icon(Icons.auto_awesome_rounded), text: 'ELEMENTAL SKILLS'),
+            Tab(icon: Icon(Icons.fitness_center_rounded), text: 'SUIT GADGETS'),
+            Tab(icon: Icon(Icons.auto_awesome_rounded), text: 'HERO & SYMBIOTE POWERS'),
           ],
         ),
       ),
       body: TabBarView(
         controller: _tabController,
         children: [
-          // Tab 1: Attributes Upgrade
           _buildAttributesTab(),
-          // Tab 2: Elemental Skills Codex
           _buildSkillsTab(),
         ],
       ),
@@ -136,29 +133,26 @@ class _HeroUpgradeScreenState extends State<HeroUpgradeScreen> with SingleTicker
 
   Widget _buildAttributesTab() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: Column(
         children: [
-          // Hero Overview Card
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: GameTheme.glassCardDecoration(
-              radius: 20,
-              borderColor: AppColors.frostPrimary,
-              glowColor: AppColors.frostPrimary,
-            ),
+          // Hero Suit Overview Card
+          GlassCard(
+            radius: 18,
+            borderColor: AppColors.spiderRed,
+            glowColor: AppColors.spiderGlow,
+            padding: const EdgeInsets.all(16),
             child: Row(
               children: [
                 Container(
-                  width: 68,
-                  height: 68,
-                  decoration: BoxDecoration(
+                  width: 64,
+                  height: 64,
+                  decoration: const BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: AppColors.frostGradient,
-                    border: Border.all(color: AppColors.white, width: 2),
+                    gradient: AppColors.spiderGradient,
                   ),
                   child: const Center(
-                    child: Icon(Icons.shield_moon_rounded, color: AppColors.white, size: 36),
+                    child: Icon(Icons.shield_moon_rounded, color: AppColors.white, size: 34),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -170,27 +164,27 @@ class _HeroUpgradeScreenState extends State<HeroUpgradeScreen> with SingleTicker
                         _user.heroName,
                         style: const TextStyle(
                           color: AppColors.white,
-                          fontSize: 18,
+                          fontSize: 17,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 3),
                       Text(
-                        'Level ${_user.heroLevel} Elemental Avatar',
-                        style: const TextStyle(color: AppColors.frostPrimary, fontSize: 13, fontWeight: FontWeight.w600),
+                        'Level ${_user.heroLevel} Web-Slinger',
+                        style: const TextStyle(color: AppColors.spiderRedLight, fontSize: 12, fontWeight: FontWeight.w600),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 6),
                       LinearProgressIndicator(
                         value: (_user.heroXp / _user.requiredXpForNextLevel).clamp(0.0, 1.0),
                         backgroundColor: AppColors.white12,
-                        valueColor: const AlwaysStoppedAnimation<Color>(AppColors.frostPrimary),
-                        minHeight: 6,
+                        valueColor: const AlwaysStoppedAnimation<Color>(AppColors.spiderRed),
+                        minHeight: 5,
                         borderRadius: BorderRadius.circular(3),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 3),
                       Text(
-                        'XP: ${_user.heroXp} / ${_user.requiredXpForNextLevel}',
-                        style: const TextStyle(color: AppColors.white54, fontSize: 11),
+                        'Hero XP: ${_user.heroXp} / ${_user.requiredXpForNextLevel}',
+                        style: const TextStyle(color: AppColors.white54, fontSize: 10),
                       ),
                     ],
                   ),
@@ -198,52 +192,52 @@ class _HeroUpgradeScreenState extends State<HeroUpgradeScreen> with SingleTicker
               ],
             ),
           ),
-          const SizedBox(height: 20),
-
-          _upgradeCard(
-            title: 'Attack Power (ATK)',
-            currentValue: '${(45 + _user.bonusAtk).toInt()} DMG',
-            bonusText: '+12 per level',
-            level: _user.atkLevel,
-            cost: _user.upgradeCostAtk,
-            icon: Icons.colorize_rounded,
-            color: AppColors.healthRedLight,
-            onUpgrade: _upgradeAtk,
-          ),
           const SizedBox(height: 14),
 
           _upgradeCard(
-            title: 'Maximum Health (HP)',
-            currentValue: '${(500 + _user.bonusMaxHp).toInt()} HP',
-            bonusText: '+60 per level',
+            title: 'Web-Shooter Voltage (ATK)',
+            currentValue: '${(55 + _user.bonusAtk).toInt()} DMG',
+            bonusText: '+12 per tier',
+            level: _user.atkLevel,
+            cost: _user.upgradeCostAtk,
+            icon: Icons.colorize_rounded,
+            color: AppColors.spiderRedLight,
+            onUpgrade: _upgradeAtk,
+          ),
+          const SizedBox(height: 10),
+
+          _upgradeCard(
+            title: 'Kevlar Spider-Suit (HP)',
+            currentValue: '${(600 + _user.bonusMaxHp).toInt()} HP',
+            bonusText: '+60 per tier',
             level: _user.hpLevel,
             cost: _user.upgradeCostHp,
             icon: Icons.favorite_rounded,
             color: AppColors.healthRed,
             onUpgrade: _upgradeHp,
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 10),
 
           _upgradeCard(
-            title: 'Defense Armor (DEF)',
-            currentValue: '${(15 + _user.bonusDef).toInt()} DEF',
-            bonusText: '+6 per level',
+            title: 'Nano-Fiber Armor (DEF)',
+            currentValue: '${(20 + _user.bonusDef).toInt()} DEF',
+            bonusText: '+6 per tier',
             level: _user.defLevel,
             cost: _user.upgradeCostDef,
             icon: Icons.shield_rounded,
-            color: AppColors.manaBlueLight,
+            color: AppColors.spiderBlueLight,
             onUpgrade: _upgradeDef,
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 10),
 
           _upgradeCard(
-            title: 'Mana Pool (MP)',
-            currentValue: '${(200 + _user.bonusMaxMp).toInt()} MP',
-            bonusText: '+30 per level',
+            title: 'Web Fluid Cartridges (MP)',
+            currentValue: '${(250 + _user.bonusMaxMp).toInt()} FLUID',
+            bonusText: '+30 per tier',
             level: _user.mpLevel,
             cost: _user.upgradeCostMp,
             icon: Icons.bolt_rounded,
-            color: AppColors.frostPrimary,
+            color: AppColors.webFluidBlue,
             onUpgrade: _upgradeMp,
           ),
         ],
@@ -255,36 +249,34 @@ class _HeroUpgradeScreenState extends State<HeroUpgradeScreen> with SingleTicker
     final skills = SkillModel.getDefaultSkills();
 
     return ListView.builder(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       itemCount: skills.length,
       itemBuilder: (context, index) {
         final skill = skills[index];
-        return Container(
-          margin: const EdgeInsets.only(bottom: 16),
-          padding: const EdgeInsets.all(18),
-          decoration: GameTheme.glassCardDecoration(
-            radius: 18,
-            borderColor: skill.color,
-            glowColor: skill.color,
-          ),
+        return GlassCard(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(16),
+          radius: 16,
+          borderColor: skill.color,
+          glowColor: skill.color,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
                   Container(
-                    width: 48,
-                    height: 48,
+                    width: 44,
+                    height: 44,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: skill.color.withValues(alpha: 0.2),
                       border: Border.all(color: skill.color, width: 2),
                     ),
                     child: Center(
-                      child: Icon(skill.icon, color: skill.color, size: 26),
+                      child: Icon(skill.icon, color: skill.color, size: 24),
                     ),
                   ),
-                  const SizedBox(width: 14),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -293,44 +285,43 @@ class _HeroUpgradeScreenState extends State<HeroUpgradeScreen> with SingleTicker
                           skill.name.toUpperCase(),
                           style: const TextStyle(
                             color: AppColors.white,
-                            fontSize: 16,
+                            fontSize: 15,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 1.1,
                           ),
                         ),
-                        const SizedBox(height: 2),
                         Text(
-                          'Element: ${skill.element.name.toUpperCase()}',
-                          style: TextStyle(color: skill.color, fontSize: 12, fontWeight: FontWeight.bold),
+                          'Class: ${skill.element.name.toUpperCase()}',
+                          style: TextStyle(color: skill.color, fontSize: 11, fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       color: AppColors.black45,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: AppColors.white24),
                     ),
                     child: Text(
                       '${skill.cooldownSeconds}s CD',
-                      style: const TextStyle(color: AppColors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                      style: const TextStyle(color: AppColors.white, fontSize: 10, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               Text(
                 skill.description,
-                style: const TextStyle(color: AppColors.white70, fontSize: 13, height: 1.4),
+                style: const TextStyle(color: AppColors.white70, fontSize: 12, height: 1.35),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Mana Cost: ${skill.manaCost.toInt()} MP', style: const TextStyle(color: AppColors.frostPrimary, fontSize: 12)),
-                  Text('Damage Mult: ${skill.damageMultiplier}x ATK', style: const TextStyle(color: AppColors.celestialGold, fontSize: 12, fontWeight: FontWeight.bold)),
+                  Text('Web Fluid Cost: ${skill.manaCost.toInt()} MP', style: const TextStyle(color: AppColors.webFluidBlue, fontSize: 11)),
+                  Text('Damage: ${skill.damageMultiplier}x ATK', style: const TextStyle(color: AppColors.electricGold, fontSize: 11, fontWeight: FontWeight.bold)),
                 ],
               ),
             ],
@@ -352,24 +343,22 @@ class _HeroUpgradeScreenState extends State<HeroUpgradeScreen> with SingleTicker
   }) {
     final canAfford = _user.gold >= cost;
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: GameTheme.glassCardDecoration(
-        radius: 16,
-        borderColor: color.withValues(alpha: 0.6),
-      ),
+    return GlassCard(
+      padding: const EdgeInsets.all(12),
+      radius: 14,
+      borderColor: color.withValues(alpha: 0.5),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.2),
               shape: BoxShape.circle,
               border: Border.all(color: color),
             ),
-            child: Icon(icon, color: color, size: 24),
+            child: Icon(icon, color: color, size: 20),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -378,61 +367,28 @@ class _HeroUpgradeScreenState extends State<HeroUpgradeScreen> with SingleTicker
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                      style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold, fontSize: 13),
                     ),
                     const SizedBox(width: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                      decoration: BoxDecoration(
-                        color: AppColors.black45,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text('Lv.$level', style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold)),
-                    ),
+                    LevelBadge(level: level, backgroundColor: color),
                   ],
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
                 Text(
                   '$currentValue ($bonusText)',
-                  style: const TextStyle(color: AppColors.white60, fontSize: 12),
+                  style: const TextStyle(color: AppColors.white60, fontSize: 11),
                 ),
               ],
             ),
           ),
-          ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: canAfford ? color : AppColors.white12,
-              foregroundColor: canAfford ? AppColors.black : AppColors.white38,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
+          GlowingButton(
+            text: '$cost 🪙',
+            height: 36,
+            fontSize: 11,
+            backgroundColor: canAfford ? color : AppColors.white12,
+            textColor: canAfford ? AppColors.black : AppColors.white38,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             onPressed: canAfford ? onUpgrade : null,
-            icon: const Icon(Icons.monetization_on_rounded, size: 16),
-            label: Text(
-              '$cost',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _currencyBadge(IconData icon, String amount, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: AppColors.black45,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.5)),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: color, size: 16),
-          const SizedBox(width: 4),
-          Text(
-            amount,
-            style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold),
           ),
         ],
       ),
