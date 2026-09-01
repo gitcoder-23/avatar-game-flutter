@@ -598,7 +598,22 @@ class GameController extends ChangeNotifier {
     final wave = stage.waves[index];
 
     waveTransitionTimer = 2.5;
-    currentWaveBanner = stage.isBoss ? 'FINAL BOSS: VENOM' : 'DISTRICT WAVE ${index + 1} / ${stage.totalWaves}';
+    final hasBoss = wave.spawns.any((m) => m.containsKey(EnemyType.dreadTitanBoss)) || stage.isBoss;
+
+    if (hasBoss && (index == stage.waves.length - 1 || stage.isBoss)) {
+      currentWaveBanner = stage.id == 3
+          ? 'SUPERVILLAIN INVASION: ELECTRO ⚡'
+          : stage.id == 5
+              ? 'SUPERVILLAIN INVASION: DR. OCTOPUS 🐙'
+              : 'FINAL APEX: VENOM SYMBIOTE 🕷️🖤';
+      // Switch background music to dark epic boss theme immediately
+      AudioService.instance.playBossBgm();
+      AudioService.instance.playBossRoar();
+      triggerScreenShake(intensity: 15.0, duration: 0.7);
+    } else {
+      currentWaveBanner = 'DISTRICT WAVE ${index + 1} / ${stage.totalWaves}';
+      AudioService.instance.playActionBgm();
+    }
 
     // Spawn enemies immediately within visible range around Spider-Man (280 to 480 px radius)
     for (var spawnMap in wave.spawns) {
