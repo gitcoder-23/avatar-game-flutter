@@ -7,7 +7,13 @@ class AudioService {
   AudioService._init();
 
   final AudioPlayer _bgmPlayer = AudioPlayer();
-  final AudioPlayer _sfxPlayer = AudioPlayer();
+  final List<AudioPlayer> _sfxPool = [
+    AudioPlayer(),
+    AudioPlayer(),
+    AudioPlayer(),
+    AudioPlayer(),
+  ];
+  int _sfxPoolIndex = 0;
 
   bool _soundEnabled = true;
   bool _musicEnabled = true;
@@ -40,7 +46,7 @@ class AudioService {
     try {
       _currentBgmTrack = assetPath;
       await _bgmPlayer.stop();
-      await _bgmPlayer.setVolume(0.45);
+      await _bgmPlayer.setVolume(0.40);
       await _bgmPlayer.setReleaseMode(ReleaseMode.loop);
       await _bgmPlayer.play(AssetSource(assetPath));
     } catch (e) {
@@ -81,15 +87,16 @@ class AudioService {
     }
   }
 
-  // SFX helper
+  // SFX pool helper (0 allocation, no leaks, no native thread locks)
   Future<void> _playSfx(String assetPath, {VoidCallback? haptic}) async {
     if (!_soundEnabled) return;
     try {
       haptic?.call();
-      final player = AudioPlayer();
-      await player.setVolume(0.85);
+      final player = _sfxPool[_sfxPoolIndex];
+      _sfxPoolIndex = (_sfxPoolIndex + 1) % _sfxPool.length;
+      await player.stop();
+      await player.setVolume(0.75);
       await player.play(AssetSource(assetPath));
-      player.onPlayerComplete.listen((_) => player.dispose());
     } catch (_) {
       haptic?.call();
     }
@@ -130,8 +137,6 @@ class AudioService {
   Future<void> playUltimate() async {
     await _playSfx('audio/sfx_symbiote.wav', haptic: () {
       HapticFeedback.heavyImpact();
-      Future.delayed(const Duration(milliseconds: 150), () => HapticFeedback.heavyImpact());
-      Future.delayed(const Duration(milliseconds: 300), () => HapticFeedback.heavyImpact());
     });
   }
 
@@ -140,10 +145,7 @@ class AudioService {
   }
 
   Future<void> playBossRoar() async {
-    await _playSfx('audio/sfx_symbiote.wav', haptic: () {
-      HapticFeedback.heavyImpact();
-      Future.delayed(const Duration(milliseconds: 200), () => HapticFeedback.heavyImpact());
-    });
+    await _playSfx('audio/sfx_symbiote.wav', haptic: () => HapticFeedback.heavyImpact());
   }
 
   Future<void> playVictory() async {
@@ -156,6 +158,8 @@ class AudioService {
 
   void dispose() {
     _bgmPlayer.dispose();
-    _sfxPlayer.dispose();
+    for (var p in _sfxPool) {
+      p.dispose();
+    }
   }
 }

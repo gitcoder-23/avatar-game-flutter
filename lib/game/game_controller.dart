@@ -53,7 +53,9 @@ class GameController extends ChangeNotifier {
   double totalDamageDealt = 0.0;
   double elapsedTime = 0.0;
 
-  // Camera & Screen Effects
+  // Viewport & Camera (Zero context dependency in tick loop)
+  double viewportWidth = 840.0;
+  double viewportHeight = 420.0;
   double cameraX = 0.0;
   double cameraY = 0.0;
   double screenShakeIntensity = 0.0;
@@ -74,7 +76,19 @@ class GameController extends ChangeNotifier {
     required TickerProvider vsync,
   }) {
     hero = HeroModel.fromUser(user);
+    // Center hero in arena
+    hero.x = GameConstants.worldWidth / 2;
+    hero.y = GameConstants.worldHeight / 2;
+    cameraX = hero.x - viewportWidth / 2;
+    cameraY = hero.y - viewportHeight / 2;
     _ticker = vsync.createTicker(_tick);
+  }
+
+  void setViewportSize(double width, double height) {
+    if (width > 100 && height > 100) {
+      viewportWidth = width;
+      viewportHeight = height;
+    }
   }
 
   void start() {
@@ -132,7 +146,7 @@ class GameController extends ChangeNotifier {
     // 2. Update Hero Position & Cooldowns
     _updateHero(dt);
 
-    // 3. Update Camera to Track Hero
+    // 3. Update Camera to Track Hero smoothly
     _updateCamera();
 
     // 4. Update Projectiles
@@ -171,7 +185,7 @@ class GameController extends ChangeNotifier {
     hero.updateSkills(dt);
 
     // Regeneration
-    hero.currentMp = (hero.currentMp + 15.0 * dt).clamp(0.0, hero.maxMp);
+    hero.currentMp = (hero.currentMp + 18.0 * dt).clamp(0.0, hero.maxMp);
 
     // Joystick Movement
     if (isJoystickActive && joystickDistance > 0.1) {
@@ -193,10 +207,10 @@ class GameController extends ChangeNotifier {
     final clamped = GameUtils.clampToWorld(
       hero.x,
       hero.y,
-      minX: 60.0,
-      maxX: GameConstants.worldWidth - 60.0,
-      minY: 60.0,
-      maxY: GameConstants.worldHeight - 60.0,
+      minX: 100.0,
+      maxX: GameConstants.worldWidth - 100.0,
+      minY: 100.0,
+      maxY: GameConstants.worldHeight - 100.0,
     );
     hero.x = clamped.$1;
     hero.y = clamped.$2;
@@ -217,17 +231,16 @@ class GameController extends ChangeNotifier {
   }
 
   void _updateCamera() {
-    final size = MediaQuery.of(context).size;
-    double targetCamX = hero.x - size.width / 2;
-    double targetCamY = hero.y - size.height / 2;
+    double targetCamX = hero.x - viewportWidth / 2;
+    double targetCamY = hero.y - viewportHeight / 2;
 
     if (screenShakeDuration > 0) {
       targetCamX += (_random.nextDouble() * 2 - 1) * screenShakeIntensity;
       targetCamY += (_random.nextDouble() * 2 - 1) * screenShakeIntensity;
     }
 
-    cameraX = targetCamX.clamp(0.0, max(0.0, GameConstants.worldWidth - size.width));
-    cameraY = targetCamY.clamp(0.0, max(0.0, GameConstants.worldHeight - size.height));
+    cameraX = targetCamX.clamp(0.0, max(0.0, GameConstants.worldWidth - viewportWidth));
+    cameraY = targetCamY.clamp(0.0, max(0.0, GameConstants.worldHeight - viewportHeight));
   }
 
   void _updateProjectiles(double dt) {
@@ -246,7 +259,7 @@ class GameController extends ChangeNotifier {
         }
       } else {
         final dist = GameUtils.getDistance(proj.x, proj.y, hero.x, hero.y);
-        if (dist <= proj.radius + 24.0) {
+        if (dist <= proj.radius + 30.0) {
           proj.isDead = true;
           _applyDamageToHero(proj.damage);
           particles.spawnSlashSparks(hero.x, hero.y, AppColors.spiderRed, proj.vx);
@@ -278,8 +291,8 @@ class GameController extends ChangeNotifier {
       }
 
       // Clamp in world
-      enemy.x = enemy.x.clamp(60.0, GameConstants.worldWidth - 60.0);
-      enemy.y = enemy.y.clamp(60.0, GameConstants.worldHeight - 60.0);
+      enemy.x = enemy.x.clamp(80.0, GameConstants.worldWidth - 80.0);
+      enemy.y = enemy.y.clamp(80.0, GameConstants.worldHeight - 80.0);
     }
 
     enemies.removeWhere((e) => e.isDead);
@@ -292,7 +305,8 @@ class GameController extends ChangeNotifier {
       _applyDamageToHero(enemy.atk);
       triggerScreenShake(intensity: 12.0, duration: 0.35);
       particles.spawnExplosion(enemy.x, enemy.y, AppColors.carnageCrimson, AppColors.venomGlow, 80);
-    } else if (distToHero <= enemy.attackRange + 25.0) {
+      AudioService.instance.playBossRoar();
+    } else if (distToHero <= enemy.attackRange + 30.0) {
       _applyDamageToHero(enemy.atk);
       particles.spawnSlashSparks(hero.x, hero.y, enemy.primaryColor, enemy.facingAngle);
     }
@@ -317,22 +331,22 @@ class GameController extends ChangeNotifier {
         final angleToEnemy = GameUtils.calculateAngle(hero.x, hero.y, enemy.x, enemy.y);
         final angleDiff = GameUtils.normalizeAngleDifference(angleToEnemy, hero.facingAngle);
 
-        if (angleDiff <= pi * 0.5) {
+        if (angleDiff <= pi * 0.6) {
           hitAny = true;
           final isCrit = GameUtils.rollCritical(hero.critChance, _random);
           final damage = hero.atk * (1.0 + comboCount * 0.1) * (isCrit ? hero.critMultiplier : 1.0);
           _applyDamageToEnemy(enemy, damage, isCrit: isCrit);
 
           // Knockback
-          enemy.x += cos(hero.facingAngle) * 45.0;
-          enemy.y += sin(hero.facingAngle) * 45.0;
+          enemy.x += cos(hero.facingAngle) * 50.0;
+          enemy.y += sin(hero.facingAngle) * 50.0;
 
           // Spawn Comic Words
           final comicWord = GameConstants.comicHitWords[_random.nextInt(GameConstants.comicHitWords.length)];
           floatingTexts.add(FloatingText(
             text: comicWord,
             x: enemy.x,
-            y: enemy.y - 35,
+            y: enemy.y - 40,
             color: isCrit ? AppColors.criticalYellow : AppColors.webFluidBlue,
             fontSize: isCrit ? 22 : 16,
             isComicPop: true,
@@ -414,9 +428,9 @@ class GameController extends ChangeNotifier {
         hero.isInvulnerable = true;
         hero.invulnerableTimer = 0.8;
 
-        // Find nearest enemy in front
+        // Find nearest enemy
         EnemyModel? target;
-        double nearestDist = 500.0;
+        double nearestDist = 600.0;
         for (var enemy in enemies) {
           final d = GameUtils.getDistance(hero.x, hero.y, enemy.x, enemy.y);
           if (d < nearestDist) {
@@ -432,8 +446,8 @@ class GameController extends ChangeNotifier {
           target.x += cos(hero.facingAngle) * 90;
           target.y += sin(hero.facingAngle) * 90;
         } else {
-          hero.x += cos(hero.facingAngle) * 260.0;
-          hero.y += sin(hero.facingAngle) * 260.0;
+          hero.x += cos(hero.facingAngle) * 280.0;
+          hero.y += sin(hero.facingAngle) * 280.0;
         }
 
         particles.spawnVoidTrail(hero.x, hero.y);
@@ -586,11 +600,15 @@ class GameController extends ChangeNotifier {
     waveTransitionTimer = 2.5;
     currentWaveBanner = stage.isBoss ? 'FINAL BOSS: VENOM' : 'DISTRICT WAVE ${index + 1} / ${stage.totalWaves}';
 
+    // Spawn enemies immediately within visible range around Spider-Man (280 to 480 px radius)
     for (var spawnMap in wave.spawns) {
       spawnMap.forEach((type, count) {
         for (int i = 0; i < count; i++) {
-          final spawnX = 200.0 + _random.nextDouble() * (GameConstants.worldWidth - 400.0);
-          final spawnY = 200.0 + _random.nextDouble() * (GameConstants.worldHeight - 400.0);
+          final spawnAngle = _random.nextDouble() * 2 * pi;
+          final spawnDist = (type == EnemyType.dreadTitanBoss) ? 320.0 : (240.0 + _random.nextDouble() * 220.0);
+          final spawnX = (hero.x + cos(spawnAngle) * spawnDist).clamp(100.0, GameConstants.worldWidth - 100.0);
+          final spawnY = (hero.y + sin(spawnAngle) * spawnDist).clamp(100.0, GameConstants.worldHeight - 100.0);
+
           final enemy = EnemyModel.createByType(type);
           enemy.x = spawnX;
           enemy.y = spawnY;

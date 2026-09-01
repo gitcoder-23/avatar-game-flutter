@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import '../core/constants/game_constants.dart';
 import '../core/theme/colors.dart';
+import 'components/enemy_entity.dart';
 import 'components/hero_entity.dart';
 import 'game_controller.dart';
 
@@ -16,6 +17,7 @@ class GamePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    controller.setViewportSize(size.width, size.height);
     final cameraX = controller.cameraX;
     final cameraY = controller.cameraY;
 
@@ -45,22 +47,35 @@ class GamePainter extends CustomPainter {
     }
 
     // 5. Enemies & Boss
+    bool isSpiderSense = false;
     for (var enemy in controller.enemies) {
       final screenX = enemy.x - cameraX;
       final screenY = enemy.y - cameraY;
 
-      if (screenX >= -100 &&
-          screenX <= size.width + 100 &&
-          screenY >= -100 &&
-          screenY <= size.height + 100) {
-        enemy.render(canvas, screenX, screenY);
+      final distToHero = sqrt(pow(enemy.x - controller.hero.x, 2) + pow(enemy.y - controller.hero.y, 2));
+      if (distToHero < 130.0) {
+        isSpiderSense = true;
+      }
+
+      if (screenX >= -120 &&
+          screenX <= size.width + 120 &&
+          screenY >= -120 &&
+          screenY <= size.height + 120) {
+        EnemyEntity.render(canvas, enemy, animTime);
       }
     }
 
-    // 6. Spider-Hero Entity
+    // 6. Spider-Hero Entity (With Spider-Sense alert)
     final heroScreenX = controller.hero.x - cameraX;
     final heroScreenY = controller.hero.y - cameraY;
-    HeroEntity.render(canvas, controller.hero, heroScreenX, heroScreenY, animTime);
+    HeroEntity.render(
+      canvas,
+      controller.hero,
+      heroScreenX,
+      heroScreenY,
+      animTime,
+      isSpiderSenseActive: isSpiderSense,
+    );
 
     // 7. Particle System (Web Splatters & Symbiote Tendrils)
     controller.particles.render(canvas, cameraX, cameraY);

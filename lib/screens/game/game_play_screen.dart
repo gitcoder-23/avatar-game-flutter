@@ -377,18 +377,73 @@ class _GamePlayScreenState extends State<GamePlayScreen> with TickerProviderStat
   }
 
   Widget _buildWaveBanner() {
-    return GlassCard(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-      radius: 18,
-      borderColor: widget.stage.primaryColor,
-      glowColor: widget.stage.primaryColor,
-      child: Text(
-        _controller.currentWaveBanner,
-        style: TextStyle(
-          color: widget.stage.primaryColor,
-          fontSize: 20,
-          fontWeight: FontWeight.w900,
-          letterSpacing: 1.5,
+    String dialogueSpeaker = 'SPIDER-MAN';
+    String dialogueQuote = 'Hostile street thugs & Oscorp drones incoming! Web them up!';
+    Color bannerColor = AppColors.spiderRedLight;
+    IconData speakerIcon = Icons.shield_moon_rounded;
+
+    if (widget.stage.isBoss) {
+      dialogueSpeaker = 'VENOM OVERLORD';
+      dialogueQuote = 'WE WILL RIP THIS CITY APART, SPIDER-MAN!';
+      bannerColor = AppColors.carnageCrimson;
+      speakerIcon = Icons.dangerous_rounded;
+    } else if (_controller.currentWaveIndex == 1) {
+      dialogueSpeaker = 'SPIDER-MAN';
+      dialogueQuote = 'Reinforcements closing in! Charge up the Symbiote Surge!';
+      bannerColor = AppColors.webFluidBlue;
+    } else if (_controller.currentWaveIndex == 2) {
+      dialogueSpeaker = 'SPIDER-MAN';
+      dialogueQuote = 'Final wave of this district! Unleash the Web-Zip Slam!';
+      bannerColor = AppColors.electricGold;
+    }
+
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 480),
+      child: GlassCard(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        radius: 18,
+        borderColor: bannerColor,
+        glowColor: bannerColor,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: bannerColor.withValues(alpha: 0.2),
+                border: Border.all(color: bannerColor),
+              ),
+              child: Icon(speakerIcon, color: bannerColor, size: 22),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        dialogueSpeaker,
+                        style: TextStyle(color: bannerColor, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.5),
+                      ),
+                      Text(
+                        _controller.currentWaveBanner,
+                        style: const TextStyle(color: AppColors.white70, fontSize: 10, fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    dialogueQuote,
+                    style: const TextStyle(color: AppColors.white, fontSize: 12, fontWeight: FontWeight.bold, height: 1.3),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
